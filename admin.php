@@ -131,7 +131,7 @@ class admin extends ecjia_admin
             $this->assign('ur_here', RC_Lang::get('user::user_account.withdraw_apply'));
         }
 
-        $this->assign('action_link', array('text' => RC_Lang::get('user::user_account.surplus_add'), 'href' => RC_Uri::url('withdraw/admin/add', array('type' => $type))));
+        $this->assign('action_link', array('text' => '线下打款', 'href' => RC_Uri::url('withdraw/admin/add', array('type' => $type))));
 
         $filter             = array();
         $filter['user_id']  = !empty($_GET['id']) ? intval($_GET['id']) : 0;

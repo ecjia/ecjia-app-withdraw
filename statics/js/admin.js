@@ -8,10 +8,9 @@
                 container : '.main_content',
             });
             app.account_list.search();
-            app.account_list.screen();
         },
         
-        screen: function () {
+        search: function () {
             $(".select-button").click(function () {
                 var process_type = $("select[name='process_type'] option:selected").val();
                 var payment = $("select[name='payment'] option:selected").val();
@@ -29,27 +28,17 @@
                 }
                 var url = $("form[name='searchForm']").attr('action');
  
-                // if (process_type != '-1') url += '&process_type=' + process_type;
-                if (payment != '' && payment != undefined) url += '&payment=' + payment;
-                if (is_paid != '-1') url += '&is_paid=' + is_paid;
                 if (start_date != '') url += '&start_date=' + start_date;
                 if (end_date != '') url += '&end_date=' + end_date;
-                ecjia.pjax(url);
-            });
-        },
-        
-        search: function () {
-            $("form[name='searchForm']").on('submit', function (e) {
-                e.preventDefault();
+
                 var keywords = $("input[name='keywords']").val();
-                var url = $("form[name='searchForm']").attr('action');
-                
                 if (keywords != '') {
                     url += '&keywords=' + keywords;
                 }
+                
                 ecjia.pjax(url);
             });
-        }
+        },
     };
  
     app.account_edit = {
