@@ -108,11 +108,11 @@ class admin extends ecjia_admin
 
         $type = 'withdraw';
 
-        if ($type == 'recharge') {
-            ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.recharge_order')));
-        } elseif ($type == 'withdraw') {
+        // if ($type == 'recharge') {
+        //     ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.recharge_order')));
+        // } elseif ($type == 'withdraw') {
             ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.withdraw_apply')));
-        }
+        // }
 
         ecjia_screen::get_current_screen()->add_help_tab(array(
             'id'      => 'overview',
@@ -125,11 +125,11 @@ class admin extends ecjia_admin
             '<p>' . __('<a href="https://ecjia.com/wiki/帮助:ECJia智能后台:充值和提现申请" target="_blank">' . RC_Lang::get('user::users.about_user_account') . '</a>') . '</p>'
         );
 
-        if ($type == 'recharge') {
-            $this->assign('ur_here', RC_Lang::get('user::user_account.recharge_order'));
-        } elseif ($type == 'withdraw') {
+        // if ($type == 'recharge') {
+        //     $this->assign('ur_here', RC_Lang::get('user::user_account.recharge_order'));
+        // } elseif ($type == 'withdraw') {
             $this->assign('ur_here', RC_Lang::get('user::user_account.withdraw_apply'));
-        }
+        // }
 
         $this->assign('action_link', array('text' => '线下打款', 'href' => RC_Uri::url('withdraw/admin/add', array('type' => $type))));
 
@@ -142,7 +142,7 @@ class admin extends ecjia_admin
         $filter['start_date'] = !empty($_GET['start_date']) ? '' : $_GET['start_date'];
         $filter['end_date']   = !empty($_GET['end_date']) ? '' : $_GET['end_date'];
 
-        $filter['type'] = empty($_GET['type']) ? 'recharge' : $_GET['type'];
+        $filter['type'] = $type;
         $list           = get_account_list($filter);
 
         $payment = get_payment();
@@ -165,7 +165,7 @@ class admin extends ecjia_admin
     {
         $this->admin_priv('withdraw_manage');
 
-        ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.surplus_add')));
+        ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here('线下打款'));
         ecjia_screen::get_current_screen()->add_help_tab(array(
             'id'      => 'overview',
             'title'   => RC_Lang::get('user::users.overview'),
@@ -176,14 +176,14 @@ class admin extends ecjia_admin
             '<p><strong>' . RC_Lang::get('user::users.more_info') . '</strong></p>' .
             '<p>' . __('<a href="https://ecjia.com/wiki/帮助:ECJia智能后台:充值和提现申请#.E6.B7.BB.E5.8A.A0.E7.94.B3.E8.AF.B7" target="_blank">' . RC_Lang::get('user::users.about_add_account') . '</a>') . '</p>'
         );
-        $this->assign('ur_here', RC_Lang::get('user::user_account.surplus_add'));
+        $this->assign('ur_here', '线下打款');
 
-        $type = empty($_GET['type']) ? 'recharge' : $_GET['type'];
-        if ($type == 'recharge') {
-            $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init', array('type' => $type)), 'text' => RC_Lang::get('user::user_account.recharge_order')));
-        } elseif ($type == 'withdraw') {
+        $type = 'withdraw';
+        // if ($type == 'recharge') {
+        //     $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init', array('type' => $type)), 'text' => RC_Lang::get('user::user_account.recharge_order')));
+        // } elseif ($type == 'withdraw') {
             $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init', array('type' => $type)), 'text' => RC_Lang::get('user::user_account.withdraw_apply')));
-        }
+        // }
 
         /* 获得支付方式列表, 不包括“货到付款” */
         $payment = get_payment();
@@ -474,7 +474,8 @@ class admin extends ecjia_admin
 
         /* 初始化 */
         $id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
-        $is_paid    = isset($_POST['is_paid']) ? intval($_POST['is_paid']) : 0;
+        // $is_paid    = isset($_POST['is_paid']) ? intval($_POST['is_paid']) : 0;
+        $is_paid    = isset($_POST['confirm']) ? 1 : 2;
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
 
         /* 查询当前的预付款信息 */
@@ -668,6 +669,14 @@ class admin extends ecjia_admin
         $this->assign('check_action', RC_Uri::url('withdraw/admin/action'));
         $this->assign('form_action', RC_Uri::url('withdraw/admin/update'));
 
+
+        $withdraw_fee                          = ecjia::config('withdraw_fee');
+        $withdraw_min_amount                   = ecjia::config('withdraw_min_amount');
+        $account_info['withdraw_fee']          = $account_info['amount'] * $withdraw_fee / 100;
+        $account_info['formated_withdraw_fee'] = ecjia_price_format($account_info['withdraw_fee']);
+        $account_info['real_amount']           = $account_info['amount'] - $account_info['withdraw_fee'];
+        $account_info['formated_real_amount']  = ecjia_price_format($account_info['real_amount']);
+            
         $this->assign('account_info', $account_info);
         $this->assign('order_sn', $order_sn);
         $this->assign('id', $id);
