@@ -61,7 +61,7 @@ class admin extends ecjia_admin
 
         // Ecjia\App\Withdraw\Helper::assign_adminlog_content();
 
-        RC_Loader::load_app_class('user_account', 'user', false);
+        // RC_Loader::load_app_class('user_account', 'user', false);
 
         /* 加载所需js */
         RC_Script::enqueue_script('jquery-validate');
@@ -76,8 +76,8 @@ class admin extends ecjia_admin
         RC_Style::enqueue_style('chosen');
         RC_Script::enqueue_script('jquery-uniform');
         RC_Style::enqueue_style('uniform-aristo');
-        RC_Script::enqueue_script('admin', RC_App::apps_url('statics/js/admin.js', __FILE__));
 
+        RC_Script::enqueue_script('admin', RC_App::apps_url('statics/js/admin.js', __FILE__));
         RC_Style::enqueue_style('admin', RC_App::apps_url('statics/css/admin.css', __FILE__), array());
 
         $account_jslang = array(
@@ -88,13 +88,7 @@ class admin extends ecjia_admin
         );
         RC_Script::localize_script('admin', 'account_jslang', $account_jslang);
 
-        $type = empty($_GET['type']) ? 'recharge' : $_GET['type'];
-        if ($type == 'recharge') {
-            ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.recharge_order'), RC_Uri::url('withdraw/admin/init', array('type' => $type))));
-        } elseif ($type == 'withdraw') {
-            ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.withdraw_apply'), RC_Uri::url('withdraw/admin/init', array('type' => $type))));
-        }
-
+        ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.withdraw_apply'), RC_Uri::url('withdraw/admin/init')));
     }
 
     /**
@@ -105,54 +99,18 @@ class admin extends ecjia_admin
         $this->admin_priv('withdraw_manage');
 
         ecjia_screen::get_current_screen()->remove_last_nav_here();
+        ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.withdraw_apply')));
 
-        $type = 'withdraw';
+        $this->assign('ur_here', RC_Lang::get('user::user_account.withdraw_apply'));
+        $this->assign('action_link', array('text' => '线下打款', 'href' => RC_Uri::url('withdraw/admin/add', array('type' => 'withdraw'))));
 
-        // if ($type == 'recharge') {
-        //     ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.recharge_order')));
-        // } elseif ($type == 'withdraw') {
-            ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.withdraw_apply')));
-        // }
+        $list = $this->get_withdraw_list();
 
-        ecjia_screen::get_current_screen()->add_help_tab(array(
-            'id'      => 'overview',
-            'title'   => RC_Lang::get('user::users.overview'),
-            'content' => '<p>' . RC_Lang::get('user::users.user_account_help') . '</p>',
-        ));
-
-        ecjia_screen::get_current_screen()->set_help_sidebar(
-            '<p><strong>' . RC_Lang::get('user::users.more_info') . '</strong></p>' .
-            '<p>' . __('<a href="https://ecjia.com/wiki/帮助:ECJia智能后台:充值和提现申请" target="_blank">' . RC_Lang::get('user::users.about_user_account') . '</a>') . '</p>'
-        );
-
-        // if ($type == 'recharge') {
-        //     $this->assign('ur_here', RC_Lang::get('user::user_account.recharge_order'));
-        // } elseif ($type == 'withdraw') {
-            $this->assign('ur_here', RC_Lang::get('user::user_account.withdraw_apply'));
-        // }
-
-        $this->assign('action_link', array('text' => '线下打款', 'href' => RC_Uri::url('withdraw/admin/add', array('type' => $type))));
-
-        $filter             = array();
-        $filter['user_id']  = !empty($_GET['id']) ? intval($_GET['id']) : 0;
-        $filter['keywords'] = empty($_GET['keywords']) ? '' : trim($_GET['keywords']);
-        // $filter['process_type'] = !empty($_GET['process_type']) ? intval($_GET['process_type']) : -1;
-        $filter['payment']    = empty($_GET['payment']) ? '' : trim($_GET['payment']);
-        $filter['is_paid']    = !empty($_GET['is_paid']) ? intval($_GET['is_paid']) : -1;
-        $filter['start_date'] = !empty($_GET['start_date']) ? '' : $_GET['start_date'];
-        $filter['end_date']   = !empty($_GET['end_date']) ? '' : $_GET['end_date'];
-
-        $filter['type'] = $type;
-        $list           = get_account_list($filter);
-
-        $payment = get_payment();
-
-        $this->assign('type', $type);
-        $this->assign('id', $filter['user_id']);
-        $this->assign('payment', $payment);
         $this->assign('list', $list);
+        $this->assign('filter', $list['filter']);
+        $this->assign('type_count', $list['type_count']);
 
-        $this->assign('form_action', RC_Uri::url('withdraw/admin/init', array('type' => $type)));
+        $this->assign('form_action', RC_Uri::url('withdraw/admin/init'));
         $this->assign('batch_action', RC_Uri::url('withdraw/admin/batch_remove'));
 
         $this->display('admin_account_list.dwt');
@@ -179,13 +137,9 @@ class admin extends ecjia_admin
         $this->assign('ur_here', '线下打款');
 
         $type = 'withdraw';
-        // if ($type == 'recharge') {
-        //     $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init', array('type' => $type)), 'text' => RC_Lang::get('user::user_account.recharge_order')));
-        // } elseif ($type == 'withdraw') {
-            $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init', array('type' => $type)), 'text' => RC_Lang::get('user::user_account.withdraw_apply')));
-        // }
 
-        /* 获得支付方式列表, 不包括“货到付款” */
+        $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init', array('type' => $type)), 'text' => RC_Lang::get('user::user_account.withdraw_apply')));
+
         $payment = get_payment();
 
         $this->assign('payment', $payment);
@@ -473,7 +427,7 @@ class admin extends ecjia_admin
         $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
 
         /* 初始化 */
-        $id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
         // $is_paid    = isset($_POST['is_paid']) ? intval($_POST['is_paid']) : 0;
         $is_paid    = isset($_POST['confirm']) ? 1 : 2;
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
@@ -484,7 +438,7 @@ class admin extends ecjia_admin
         $amount            = $account['amount'];
         $frozen_money      = $account['amount'];
         $user_frozen_money = user_account::get_frozen_money($account['user_id']);
-        
+
         //到款状态不能再次修改
         if (!empty($account['is_paid'])) {
             return false;
@@ -669,14 +623,13 @@ class admin extends ecjia_admin
         $this->assign('check_action', RC_Uri::url('withdraw/admin/action'));
         $this->assign('form_action', RC_Uri::url('withdraw/admin/update'));
 
-
         $withdraw_fee                          = ecjia::config('withdraw_fee');
         $withdraw_min_amount                   = ecjia::config('withdraw_min_amount');
         $account_info['withdraw_fee']          = $account_info['amount'] * $withdraw_fee / 100;
         $account_info['formated_withdraw_fee'] = ecjia_price_format($account_info['withdraw_fee']);
         $account_info['real_amount']           = $account_info['amount'] - $account_info['withdraw_fee'];
         $account_info['formated_real_amount']  = ecjia_price_format($account_info['real_amount']);
-            
+
         $this->assign('account_info', $account_info);
         $this->assign('order_sn', $order_sn);
         $this->assign('id', $id);
@@ -703,6 +656,76 @@ class admin extends ecjia_admin
             return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, $result);
         }
     }
+
+    /**
+     * 获取提现申请列表
+     */
+    private function get_withdraw_list()
+    {
+        $filter['start_date'] = !empty($_GET['start_date']) ? '' : $_GET['start_date'];
+        $filter['end_date']   = !empty($_GET['end_date']) ? '' : $_GET['end_date'];
+        $filter['keywords']   = trim($_GET['keywords']);
+        $filter['type']       = trim($_GET['type']);
+
+        $filter['sort_by']    = empty($_GET['sort_by']) ? 'ua.add_time' : trim($_GET['sort_by']);
+        $filter['sort_order'] = empty($_GET['sort_order']) ? 'desc' : trim($_GET['sort_order']);
+
+        $db_user_account = RC_DB::table('user_account as ua')
+            ->leftJoin('users as u', RC_DB::raw('ua.user_id'), '=', RC_DB::raw('u.user_id'))
+            ->where(RC_DB::raw('ua.process_type'), 1);
+
+        if ($filter['keywords']) {
+            $db_user_account->where(RC_DB::raw('u.user_name'), 'like', '%' . mysql_like_quote($filter['keywords']) . '%');
+        }
+
+        if (!empty($filter['start_date']) && !empty($filter['end_date'])) {
+            $start_date = RC_Time::local_strtotime($filter['start_date']);
+            $end_date   = RC_Time::local_strtotime($filter['end_date']);
+            $db_user_account->where('add_time', '>=', $start_date)->where('add_time', '<', $end_date);
+        }
+
+        $type_count = $db_user_account->select(RC_DB::raw('SUM(IF(ua.is_paid = 0, 1, 0)) as wait'),
+            RC_DB::raw('SUM(IF(ua.is_paid = 1, 1, 0)) as finished'),
+            RC_DB::raw('SUM(IF(ua.is_paid = 2, 1, 0)) as canceled'))->first();
+
+        if ($filter['type'] == 'finished') {
+            $db_user_account->where(RC_DB::raw('ua.is_paid'), 1);
+        } elseif ($filter['type'] == 'canceled') {
+            $db_user_account->where(RC_DB::raw('ua.is_paid'), 2);
+        } else {
+            $db_user_account->where(RC_DB::raw('ua.is_paid'), 0);
+        }
+
+        $count = $db_user_account->count();
+        $page  = new ecjia_page($count, 15, 6);
+
+        $payment_method = RC_Loader::load_app_class('payment_method', 'payment');
+        $payment_list   = $payment_method->available_payment_list(false);
+
+        $pay_name = array();
+        if (!empty($payment_list) && is_array($payment_list)) {
+            foreach ($payment_list as $key => $value) {
+                $pay_name[$value['pay_code']] = $value['pay_name'];
+            }
+        }
+
+        $list = $db_user_account
+            ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
+            ->take(15)
+            ->skip($page->start_id - 1)
+            ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
+            ->get();
+
+        if (!empty($list)) {
+            foreach ($list as $key => $value) {
+                $list[$key]['surplus_amount'] = ecjia_price_format(abs($value['amount']), false);
+                $list[$key]['add_date']       = RC_Time::local_date(ecjia::config('time_format'), $value['add_time']);
+                $list[$key]['payment']        = empty($pay_name[$value['payment']]) ? strip_tags($value['payment']) : strip_tags($pay_name[$value['payment']]);
+            }
+        }
+        return array('list' => $list, 'filter' => $filter, 'page' => $page->show(5), 'desc' => $page->page_desc(), 'type_count' => $type_count);
+    }
+
 }
 
 // end
