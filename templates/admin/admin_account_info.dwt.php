@@ -57,7 +57,7 @@
 							<td><div align="right"><strong>订单编号：</strong></div></td>
 							<td>{$account_info.order_sn}</td>
 							<td><div align="right"><strong>状态：</strong></div></td>
-							<td>{if $account_info.is_paid eq 0}待审核{else}已完成{/if}</td>
+							<td>{if $account_info.is_paid eq 0}待审核{else if $account_info.is_paid eq 1}已完成{else}已取消{/if}</td>
 						</tr>
 
 						<tr>
@@ -77,7 +77,7 @@
 							<td><div align="right"><strong>提现手续费：</strong></div></td>
 							<td>{$account_info.formated_withdraw_fee}</td>
 							<td><div align="right"><strong>到帐金额：</strong></div></td>
-							<td>{$account_info.formated_real_amount}</td>
+							<td><strong class="ecjiafc-FF0000 ecjiaf-fs3">{$account_info.formated_real_amount}</strong></td>
 						</tr>
 
 						<tr>
@@ -130,7 +130,6 @@
 								{else}
 									<input class="btn btn-gebo" type="submit" value="{lang key='system::system.button_submit'}" />
 								{/if}
-								<input type="hidden" name="type" value="{$type}" />
 								</td>
 							</tr>
 						</tbody>

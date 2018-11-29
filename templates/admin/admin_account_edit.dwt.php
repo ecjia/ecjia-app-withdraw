@@ -84,7 +84,6 @@
 				<div class="control-group">
 					<div class="controls">
 						<input type="hidden" name="id" value="{$user_surplus.id}" />
-						<input type="hidden" name="type" value="{$type}" />
 						<!-- {if $user_surplus.process_type eq 0 || $user_surplus.process_type eq 1} -->
 						<button class="btn btn-gebo" type="submit">{lang key='system::system.button_submit'}</button>
 						<!-- {/if} -->
