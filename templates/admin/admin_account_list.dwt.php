@@ -25,19 +25,31 @@
 <div class="row-fluid">
 	<ul class="nav nav-pills">
 		<li class="{if !$filter.type}active{/if}">
-			<a class="data-pjax" href='{url path="withdraw/admin/init" args="{if $filter.keywords}&keywords={$filter.keywords}{/if}"}'>
+			<a class="data-pjax" href='{url path="withdraw/admin/init" args="
+				{if $filter.start_date}&start_date={$filter.start_date}{/if}
+				{if $filter.end_date}&end_date={$filter.end_date}{/if}
+				{if $filter.keywords}&keywords={$filter.keywords}{/if}
+				"}'>
 				待审核<span class="badge badge-info">{if $type_count.wait}{$type_count.wait}{else}0{/if}</span>
 			</a>
 		</li>
 
 		<li class="{if $filter.type eq 'finished'}active{/if}">
-			<a class="data-pjax" href='{url path="withdraw/admin/init" args="type=finished{if $filter.keywords}&keywords={$filter.keywords}{/if}"}'>
+			<a class="data-pjax" href='{url path="withdraw/admin/init" args="type=finished
+				{if $filter.start_date}&start_date={$filter.start_date}{/if}
+				{if $filter.end_date}&end_date={$filter.end_date}{/if}
+				{if $filter.keywords}&keywords={$filter.keywords}{/if}
+				"}'>
 				已完成<span class="badge badge-info">{if $type_count.finished}{$type_count.finished}{else}0{/if}</span>
 			</a>
 		</li>
 
 		<li class="{if $filter.type eq 'canceled'}active{/if}">
-			<a class="data-pjax" href='{url path="withdraw/admin/init" args="type=canceled{if $filter.keywords}&keywords={$filter.keywords}{/if}"}'>
+			<a class="data-pjax" href='{url path="withdraw/admin/init" args="type=canceled
+				{if $filter.start_date}&start_date={$filter.start_date}{/if}
+				{if $filter.end_date}&end_date={$filter.end_date}{/if}
+				{if $filter.keywords}&keywords={$filter.keywords}{/if}
+				"}'>
 				已取消<span class="badge badge-info">{if $type_count.canceled}{$type_count.canceled}{else}0{/if}</span>
 			</a>
 		</li>
@@ -94,7 +106,7 @@
 						<input type="checkbox" value="{$item.id}" disabled="disabled" />
 						<!-- {/if} -->
 					</td>
-					<td><a class="data-pjax" href='{url path="/withdraw/admin/info" args="order_sn={$item.order_sn}&id={$item.id}{if $type}&type={$type}{/if}"}'>{$item.order_sn}</a></td>
+					<td><a class="data-pjax" href='{url path="withdraw/admin/info" args="order_sn={$item.order_sn}&id={$item.id}{if $type}&type={$type}{/if}"}'>{$item.order_sn}</a></td>
 					<td>{if $item.user_name}{$item.user_name}{else}{lang key='user::user_account.no_user'}{/if}</td>
 					<td align="right">{$item.surplus_amount}</td>
 					<td align="center">{$item.formated_withdraw_fee}</td>

@@ -662,8 +662,8 @@ class admin extends ecjia_admin
      */
     private function get_withdraw_list()
     {
-        $filter['start_date'] = !empty($_GET['start_date']) ? '' : $_GET['start_date'];
-        $filter['end_date']   = !empty($_GET['end_date']) ? '' : $_GET['end_date'];
+        $filter['start_date'] = empty($_GET['start_date']) ? '' : $_GET['start_date'];
+        $filter['end_date']   = empty($_GET['end_date']) ? '' : $_GET['end_date'];
         $filter['keywords']   = trim($_GET['keywords']);
         $filter['type']       = trim($_GET['type']);
 
@@ -681,6 +681,7 @@ class admin extends ecjia_admin
         if (!empty($filter['start_date']) && !empty($filter['end_date'])) {
             $start_date = RC_Time::local_strtotime($filter['start_date']);
             $end_date   = RC_Time::local_strtotime($filter['end_date']);
+            
             $db_user_account->where('add_time', '>=', $start_date)->where('add_time', '<', $end_date);
         }
 
