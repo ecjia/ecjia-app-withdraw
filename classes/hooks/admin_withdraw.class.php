@@ -51,8 +51,8 @@ class withdraw_admin_plugin
     public static function withdraw_admin_menu_api($menus)
     {
         $menus->add_submenu([
-        	ecjia_admin::make_admin_menu('divider', '', '', 20)->add_purview('withdraw_manage'),
-        	ecjia_admin::make_admin_menu('refund_list', '提现申请', RC_Uri::url('withdraw/admin/init'), 21)->add_purview('withdraw_manage')
+        	ecjia_admin::make_admin_menu('divider', '', '', 30)->add_purview(array('withdraw_manage', 'surplus_manage')),
+        	ecjia_admin::make_admin_menu('refund_list', '提现申请', RC_Uri::url('withdraw/admin/init'), 32)->add_purview('withdraw_manage')
         ]);
 
         return $menus;
