@@ -53,6 +53,7 @@
         init: function () {
             app.account_edit.validate();
             app.account_edit.submit();
+            app.account_edit.select_note();
         },
 
         validate: function () {
@@ -70,8 +71,10 @@
                     }
 
                     if (data.status == 1) {
-                        $(".user").removeClass("username");
-                        $(".userinfo").html(data.username);
+                        $(".control-group-user").removeClass("hide");
+                        $(".control-group-user").find('.userinfo').html(data.username);
+                        $(".control-group-user").find('.user_money').html(data.user_money);
+                        $(".control-group-user").find('.wechat_nickname').find('span').html(data.wechat_nickname);
                     }
                 }, 'json');
             });
@@ -107,7 +110,20 @@
             }
             var options = $.extend(ecjia.admin.defaultOptions.validate, option);
             $this.validate(options);
-        }
+        },
+
+        select_note: function () {
+            $('.select_admin_note').off('change').on('change', function () {
+                var $this = $('.select_admin_note option:selected');
+                var text = $this.text();
+                var val = $this.val();
+                var html = '';
+                if (val != 0) {
+                    html = text;
+                }
+                $('textarea[name="admin_note"]').val(html);
+            });
+        },
     };
 
     app.account_check = {

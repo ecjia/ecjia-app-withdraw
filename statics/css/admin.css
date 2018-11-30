@@ -25,30 +25,30 @@
 	background: url("../images/order-time-base-admin.png") no-repeat scroll 50% -102px;
 }
 
-
 .order-status-base .step-first .step-done .step-no {
 	background-position: 50% -204px;
 }
+
 .order-status-base .step-first .step-cur .step-no {
 	background-position: 50% -34px;
 }
+
 .order-status-base .step-done .step-no {
 	background-position: 50% -170px;
 }
+
 .order-status-base .step-cur .step-no {
 	background-position: 50% 0;
 }
+
 .order-status-base .step-last .step-no {
 	background-position: 50% -136px;
 }
+
 .order-status-base .step-last .step-cur .step-no {
 	background-position: 50% -68px;
 }
 
-
-.username{
-	display:none;
-}
-.userinfo{
-	padding:4px 6px;
+.control-group-user .wechat_nickname {
+	padding: 5px 6px;
 }
