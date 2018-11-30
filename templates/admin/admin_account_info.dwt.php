@@ -69,7 +69,7 @@
 									{lang key='user::user_account.anonymous_member'}
 								{/if}
 							</td>
-							<td><div align="right"><strong>{lang key='user::user_account.label_surplus_amount'}</strong></div></td>
+							<td><div align="right"><strong>申请金额：</strong></div></td>
 							<td>￥{$account_info.amount}{lang key='user::user_account.yuan'}</td>				
 						</tr>
 

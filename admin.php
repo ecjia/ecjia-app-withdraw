@@ -393,7 +393,7 @@ class admin extends ecjia_admin
 
         //到款状态不能再次修改
         if (!empty($account['is_paid'])) {
-            return false;
+            return $this->showmessage('该订单已审核，请勿重复操作', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
         /* 如果是退款申请, 并且已完成,更新此条记录,扣除相应的余额 */
