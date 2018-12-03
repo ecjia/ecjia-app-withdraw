@@ -106,7 +106,7 @@
 						<input type="checkbox" value="{$item.id}" disabled="disabled" />
 						<!-- {/if} -->
 					</td>
-					<td><a class="data-pjax" href='{url path="withdraw/admin/info" args="order_sn={$item.order_sn}&id={$item.id}{if $type}&type={$type}{/if}"}'>{$item.order_sn}</a></td>
+					<td><a class="data-pjax" href='{url path="withdraw/admin/check" args="order_sn={$item.order_sn}&id={$item.id}{if $type}&type={$type}{/if}"}'>{$item.order_sn}</a></td>
 					<td>{if $item.user_name}{$item.user_name}{else}{lang key='user::user_account.no_user'}{/if}</td>
 					<td align="right">{$item.surplus_amount}</td>
 					<td align="center">{$item.formated_withdraw_fee}</td>
@@ -116,7 +116,7 @@
 					<td align="center">{if $item.is_paid eq 1}{lang key='user::user_account.confirm'}{elseif $item.is_paid eq 0}{lang
 						key='user::user_account.wait_check'}{else}{lang key='user::user_account.canceled'}{/if}</td>
 					<td align="center">
-						<a class="data-pjax no-underline" href='{url path="withdraw/admin/info" args="id={$item.id}{if $type}&type={$type}{/if}"}'
+						<a class="data-pjax no-underline" href='{url path="withdraw/admin/check" args="id={$item.id}{if $type}&type={$type}{/if}"}'
 						 title="查看"><i class="fontello-icon-doc-text"></i></a>
 						{if $item.is_paid neq 1}
 						<a class="ajaxremove no-underline" data-toggle="ajaxremove" data-msg="{lang key='user::user_account.delete_surplus_confirm'}"

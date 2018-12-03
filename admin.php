@@ -245,51 +245,6 @@ class admin extends ecjia_admin
     }
 
     /**
-     * 编辑提现申请
-     */
-    public function edit()
-    {
-        $this->admin_priv('withdraw_manage');
-
-        ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.surplus_edit')));
-        ecjia_screen::get_current_screen()->add_help_tab(array(
-            'id'      => 'overview',
-            'title'   => RC_Lang::get('user::users.overview'),
-            'content' => '<p>' . RC_Lang::get('user::users.edit_account_help') . '</p>',
-        ));
-
-        ecjia_screen::get_current_screen()->set_help_sidebar(
-            '<p><strong>' . RC_Lang::get('user::users.more_info') . '</strong></p>' .
-            '<p>' . __('<a href="https://ecjia.com/wiki/帮助:ECJia智能后台:和提现申请#.E6.B7.BB.E5.8A.A0.E7.94.B3.E8.AF.B7" target="_blank">' . RC_Lang::get('user::users.about_edit_account') . '</a>') . '</p>'
-        );
-
-        $this->assign('ur_here', RC_Lang::get('user::user_account.surplus_edit'));
-        $this->assign('action_link', array('text' => RC_Lang::get('user::user_account.withdraw_apply'), 'href' => RC_Uri::url('withdraw/admin/init')));
-
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-        /* 查询当前的预付款信息 */
-        $account = array();
-        $account = RC_DB::table('user_account')->where('id', $id)->first();
-
-        $account['add_time'] = RC_Time::local_date(ecjia::config('time_format'), $account['add_time']);
-        $user_mobile         = RC_DB::table('users')->where('user_id', $account['user_id'])->pluck('mobile_phone');
-
-        $account['user_note'] = htmlspecialchars($account['user_note']);
-        $account['payment']   = strip_tags($account['payment']);
-        $account['amount']    = abs($account['amount']);
-
-        /* 模板赋值 */
-        $this->assign('surplus', $account);
-        $this->assign('user_mobile', $user_mobile);
-        $this->assign('id', $id);
-
-        $this->assign('form_action', RC_Uri::url('withdraw/admin/update'));
-
-        $this->display('admin_account_check.dwt');
-    }
-
-    /**
      * 更新提现申请
      */
     public function update()
@@ -330,43 +285,7 @@ class admin extends ecjia_admin
         $links[0]['text'] = RC_Lang::get('user::user_account.back_withdraw_list');
         $links[0]['href'] = RC_Uri::url('withdraw/admin/init');
 
-        return $this->showmessage(RC_Lang::get('user::user_account.edit_success'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => RC_Uri::url('withdraw/admin/info', array('id' => $id))));
-    }
-
-    /**
-     * 审核会员余额页面
-     */
-    public function check()
-    {
-        $this->admin_priv('withdraw_manage');
-
-        ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(RC_Lang::get('user::user_account.check')));
-
-        $this->assign('ur_here', RC_Lang::get('user::user_account.check'));
-        $this->assign('action_link', array('text' => '提现申请', 'href' => RC_Uri::url('withdraw/admin/init')));
-
-        $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-        /* 查询当前的预付款信息 */
-        $account = array();
-        $account = RC_DB::table('user_account')->where('id', $id)->first();
-
-        $account['add_time']  = RC_Time::local_date(ecjia::config('time_format'), $account['add_time']);
-        $account['user_note'] = htmlspecialchars($account['user_note']);
-
-        $user_name    = RC_DB::table('users')->where('user_id', $account['user_id'])->pluck('user_name');
-        $payment_name = RC_DB::table('payment')->where('pay_code', $account['payment'])->pluck('pay_name');
-
-        $account['payment'] = empty($payment_name) ? strip_tags($account['payment']) : strip_tags($payment_name);
-        $account['amount']  = abs($account['amount']);
-
-        $this->assign('surplus', $account);
-        $this->assign('user_name', $user_name);
-        $this->assign('id', $id);
-        $this->assign('check_action', RC_Uri::url('withdraw/admin/action'));
-        $this->assign('is_check', 1);
-
-        $this->display('admin_account_check.dwt');
+        return $this->showmessage(RC_Lang::get('user::user_account.edit_success'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => RC_Uri::url('withdraw/admin/check', array('id' => $id))));
     }
 
     /**
@@ -442,7 +361,7 @@ class admin extends ecjia_admin
         $links[0]['text'] = RC_Lang::get('user::user_account.back_withdraw_list');
         $links[0]['href'] = RC_Uri::url('withdraw/admin/init');
 
-        return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => RC_Uri::url('withdraw/admin/info', array('id' => $id))));
+        return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => RC_Uri::url('withdraw/admin/check', array('id' => $id))));
     }
 
     /**
@@ -518,9 +437,9 @@ class admin extends ecjia_admin
     }
 
     /**
-     * 提现详情
+     * 审核提现详情
      */
-    public function info()
+    public function check()
     {
         $this->admin_priv('withdraw_manage');
 
