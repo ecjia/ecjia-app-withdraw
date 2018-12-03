@@ -141,15 +141,14 @@ class admin extends ecjia_admin
         $this->admin_priv('withdraw_manage');
 
         /* 初始化变量 */
-        $id           = isset($_POST['id']) ? intval($_POST['id']) : 0;
-        $is_paid      = !empty($_POST['is_paid']) ? intval($_POST['is_paid']) : 0;
-        $amount       = !empty($_POST['amount']) ? floatval($_POST['amount']) : 0;
-        $process_type = !empty($_POST['process_type']) ? intval($_POST['process_type']) : 0;
-        $user_mobile  = !empty($_POST['user_mobile']) ? trim($_POST['user_mobile']) : '';
-        $admin_note   = !empty($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
-        $user_note    = !empty($_POST['user_note']) ? trim($_POST['user_note']) : '';
-        $payment      = !empty($_POST['payment']) ? trim($_POST['payment']) : '';
-        $amount_count = $amount;
+        $id            = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $amount        = !empty($_POST['amount']) ? floatval($_POST['amount']) : 0;
+        $process_type  = 1; //提现
+        $user_mobile   = !empty($_POST['user_mobile']) ? trim($_POST['user_mobile']) : '';
+        $admin_note    = !empty($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
+        $user_note     = !empty($_POST['user_note']) ? trim($_POST['user_note']) : '';
+        $recharge_type = !empty($_POST['recharge_type']) ? trim($_POST['recharge_type']) : '';
+        $amount_count  = $amount;
 
         /* 验证参数有效性  */
         if (!is_numeric($amount) || empty($amount) || $amount <= 0 || strpos($amount, '.') > 0) {
@@ -162,18 +161,20 @@ class admin extends ecjia_admin
             return $this->showmessage(RC_Lang::get('user::user_account.username_not_exist'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
+        /*金额必须为1元起*/
+        if (abs($amount) < 1) {
+            return $this->showmessage(RC_Lang::get('user::user_account.min_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
         if (empty($payment)) {
             return $this->showmessage(RC_Lang::get('user::user_account.js_languages.pay_code_empty'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        /* 退款，检查余额是否足够 */
-        if ($process_type == 1) {
-            //$user_account = get_user_surplus($user_info['user_id']);
-            $user_account = user_account::get_user_money($user_info['user_id']);
-            /* 如果扣除的余额多于此会员拥有的余额，提示 */
-            if ($amount > $user_account) {
-                return $this->showmessage(RC_Lang::get('user::user_account.surplus_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-            }
+        /* 检查余额是否足够 */
+        $user_account = user_account::get_user_money($user_info['user_id']);
+        /* 如果扣除的余额多于此会员拥有的余额，提示 */
+        if ($amount > $user_account) {
+            return $this->showmessage(RC_Lang::get('user::user_account.surplus_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
         /* 入库的操作 */
@@ -181,9 +182,9 @@ class admin extends ecjia_admin
             $amount = (-1) * $amount;
         }
 
-        /*金额必须为1元起*/
-        if (abs($amount) < 1) {
-            return $this->showmessage(RC_Lang::get('user::user_account.min_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        $is_paid = 0;
+        if ($recharge_type == 1) {
+            $is_paid = 1;
         }
 
         $order_sn = ecjia_order_deposit_sn();
@@ -196,12 +197,12 @@ class admin extends ecjia_admin
             'admin_note'   => $admin_note,
             'user_note'    => $user_note,
             'process_type' => $process_type,
-            'payment'      => $payment,
             'is_paid'      => $is_paid,
             'order_sn'     => $order_sn,
             'from_type'    => 'admin',
             'from_value'   => $_SESSION['admin_id'],
         );
+
         if ($is_paid == 1) {
             $data['paid_time'] = RC_Time::gmtime();
         }
@@ -216,7 +217,7 @@ class admin extends ecjia_admin
             change_account_log($user_info['user_id'], $amount, 0, 0, 0, $change_desc, $change_type);
         } else {
             //提现申请且到款状态为未确认状态时；且提现申请成功
-            if ($process_type == '1' && !empty($accountid) && $is_paid == '0') {
+            if (!empty($accountid) && empty($is_paid)) {
                 //提现申请成功，记录account_log；从余额中冻结提现金额
                 $frozen_money = abs($amount);
                 $user_money   = $amount;
@@ -233,13 +234,7 @@ class admin extends ecjia_admin
             }
         }
 
-        if ($process_type == 0) {
-            $account = RC_Lang::get('user::user_account.deposit');
-        } else {
-            $account = RC_Lang::get('user::user_account.withdraw');
-        }
-
-        ecjia_admin::admin_log(RC_Lang::get('user::user_account.log_username') . $user_info['user_name'] . ',' . $account . $amount, 'add', 'withdraw_apply');
+        ecjia_admin::admin_log(RC_Lang::get('user::user_account.log_username') . $user_info['user_name'] . ',' . '提现' . $amount, 'add', 'withdraw_apply');
 
         $links[0]['text'] = RC_Lang::get('user::user_account.back_withdraw_list');
         $links[0]['href'] = RC_Uri::url('withdraw/admin/init');
@@ -384,7 +379,6 @@ class admin extends ecjia_admin
 
         /* 初始化 */
         $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-        // $is_paid    = isset($_POST['is_paid']) ? intval($_POST['is_paid']) : 0;
         $is_paid    = isset($_POST['confirm']) ? 1 : 2;
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
 
