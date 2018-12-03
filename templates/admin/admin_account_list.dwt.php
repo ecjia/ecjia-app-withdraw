@@ -25,31 +25,31 @@
 <div class="row-fluid">
 	<ul class="nav nav-pills">
 		<li class="{if !$filter.type}active{/if}">
-			<a class="data-pjax" href='{url path="withdraw/admin/init" args="
+			<a class="data-pjax" href='{RC_Uri::url("withdraw/admin/init")}
 				{if $filter.start_date}&start_date={$filter.start_date}{/if}
 				{if $filter.end_date}&end_date={$filter.end_date}{/if}
 				{if $filter.keywords}&keywords={$filter.keywords}{/if}
-				"}'>
+				'>
 				待审核<span class="badge badge-info">{if $type_count.wait}{$type_count.wait}{else}0{/if}</span>
 			</a>
 		</li>
 
 		<li class="{if $filter.type eq 'finished'}active{/if}">
-			<a class="data-pjax" href='{url path="withdraw/admin/init" args="type=finished
+			<a class="data-pjax" href='{RC_Uri::url("withdraw/admin/init")}&type=finished
 				{if $filter.start_date}&start_date={$filter.start_date}{/if}
 				{if $filter.end_date}&end_date={$filter.end_date}{/if}
 				{if $filter.keywords}&keywords={$filter.keywords}{/if}
-				"}'>
+				'>
 				已完成<span class="badge badge-info">{if $type_count.finished}{$type_count.finished}{else}0{/if}</span>
 			</a>
 		</li>
 
 		<li class="{if $filter.type eq 'canceled'}active{/if}">
-			<a class="data-pjax" href='{url path="withdraw/admin/init" args="type=canceled
+			<a class="data-pjax" href='{RC_Uri::url("withdraw/admin/init")}&type=canceled
 				{if $filter.start_date}&start_date={$filter.start_date}{/if}
 				{if $filter.end_date}&end_date={$filter.end_date}{/if}
 				{if $filter.keywords}&keywords={$filter.keywords}{/if}
-				"}'>
+				'>
 				已取消<span class="badge badge-info">{if $type_count.canceled}{$type_count.canceled}{else}0{/if}</span>
 			</a>
 		</li>
@@ -114,7 +114,7 @@
 					<td>{if $item.payment}{$item.payment}{/if}</td>
 					<td align="center">{$item.add_date}</td>
 					<td align="center">{if $item.is_paid eq 1}{lang key='user::user_account.confirm'}{elseif $item.is_paid eq 0}{lang
-						key='user::user_account.unconfirm'}{else}{lang key='user::user_account.cancel'}{/if}</td>
+						key='user::user_account.wait_check'}{else}{lang key='user::user_account.canceled'}{/if}</td>
 					<td align="center">
 						<a class="data-pjax no-underline" href='{url path="withdraw/admin/info" args="id={$item.id}{if $type}&type={$type}{/if}"}'
 						 title="查看"><i class="fontello-icon-doc-text"></i></a>
