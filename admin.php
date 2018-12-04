@@ -483,13 +483,14 @@ class admin extends ecjia_admin
         $order_sn = isset($_GET['order_sn']) ? $_GET['order_sn'] : '';
         $id       = isset($_GET['id']) ? $_GET['id'] : 0;
 
-        $account_info              = RC_DB::table('user_account')->where('id', $id)->first();
-        $account_info['user_name'] = RC_DB::table('users')->where('user_id', $account_info['user_id'])->pluck('user_name');
-        $account_info['pay_name']  = RC_DB::table('payment')->where('pay_code', $account_info['payment'])->pluck('pay_name');
-        $account_info['amount']    = abs($account_info['amount']);
-        $account_info['user_note'] = htmlspecialchars($account_info['user_note']);
-        $account_info['add_time']  = RC_Time::local_date(ecjia::config('time_format'), $account_info['add_time']);
-        $account_info['pay_time']  = RC_Time::local_date(ecjia::config('time_format'), $account_info['paid_time']);
+        $account_info                    = RC_DB::table('user_account')->where('id', $id)->first();
+        $account_info['user_name']       = RC_DB::table('users')->where('user_id', $account_info['user_id'])->pluck('user_name');
+        $account_info['pay_name']        = RC_DB::table('payment')->where('pay_code', $account_info['payment'])->pluck('pay_name');
+        $account_info['amount']          = abs($account_info['amount']);
+        $account_info['formated_amount'] = ecjia_price_format($account_info['amount'], false);
+        $account_info['user_note']       = htmlspecialchars($account_info['user_note']);
+        $account_info['add_time']        = RC_Time::local_date(ecjia::config('time_format'), $account_info['add_time']);
+        $account_info['pay_time']        = RC_Time::local_date(ecjia::config('time_format'), $account_info['paid_time']);
 
         //订单流程状态
         if ($account_info['is_paid'] == 0) {
@@ -600,7 +601,8 @@ class admin extends ecjia_admin
             ->where(RC_DB::raw('ua.process_type'), 1);
 
         if ($filter['keywords']) {
-            $db_user_account->where(RC_DB::raw('u.user_name'), 'like', '%' . mysql_like_quote($filter['keywords']) . '%');
+            $db_user_account->where(RC_DB::raw('u.user_name'), 'like', '%' . mysql_like_quote($filter['keywords']) . '%')
+                ->orWhere(RC_DB::raw('u.mobile_phone'), 'like', '%' . mysql_like_quote($filter['keywords']) . '%');
         }
 
         if (!empty($filter['start_date'])) {

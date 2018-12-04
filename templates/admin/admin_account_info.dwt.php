@@ -70,14 +70,14 @@
 								{/if}
 							</td>
 							<td><div align="right"><strong>申请金额：</strong></div></td>
-							<td>￥{$account_info.amount}{lang key='user::user_account.yuan'}</td>				
+							<td>{$account_info.formated_amount}{lang key='user::user_account.yuan'}</td>				
 						</tr>
 
 						<tr>
 							<td><div align="right"><strong>提现手续费：</strong></div></td>
 							<td>{$account_info.formated_withdraw_fee}</td>
 							<td><div align="right"><strong>到帐金额：</strong></div></td>
-							<td><strong class="ecjiafc-FF0000 ecjiaf-fs3">{$account_info.formated_real_amount}</strong></td>
+							<td><strong class="ecjiafc-red ecjiaf-fs3">{$account_info.formated_real_amount}</strong></td>
 						</tr>
 
 						<tr>
