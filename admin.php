@@ -564,10 +564,23 @@ class admin extends ecjia_admin
         return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, $result);
     }
 
+    public function download()
+    {
+        $data = $this->get_withdraw_list(true);
+
+        RC_Excel::load(RC_APP_PATH . 'withdraw' . DIRECTORY_SEPARATOR . 'statics/files/withdraw.xls', function ($excel) use ($data) {
+            $excel->sheet('First sheet', function ($sheet) use ($data) {
+                foreach ($data as $k => $v) {
+                    $sheet->appendRow($k + 2, $v);
+                }
+            });
+        })->download('xls');
+    }
+
     /**
      * 获取提现申请列表
      */
-    private function get_withdraw_list()
+    private function get_withdraw_list($return_all = false)
     {
         $filter['start_date'] = empty($_GET['start_date']) ? '' : $_GET['start_date'];
         $filter['end_date']   = empty($_GET['end_date']) ? '' : $_GET['end_date'];
@@ -592,20 +605,35 @@ class admin extends ecjia_admin
             $db_user_account->where('add_time', '>=', $start_date)->where('add_time', '<', $end_date);
         }
 
-        $type_count = $db_user_account->select(RC_DB::raw('SUM(IF(ua.is_paid = 0, 1, 0)) as wait'),
-            RC_DB::raw('SUM(IF(ua.is_paid = 1, 1, 0)) as finished'),
-            RC_DB::raw('SUM(IF(ua.is_paid = 2, 1, 0)) as canceled'))->first();
-
-        if ($filter['type'] == 'finished') {
-            $db_user_account->where(RC_DB::raw('ua.is_paid'), 1);
-        } elseif ($filter['type'] == 'canceled') {
-            $db_user_account->where(RC_DB::raw('ua.is_paid'), 2);
+        if ($return_all) {
+            $list = $db_user_account
+                ->where(RC_DB::raw('ua.is_paid'), 0)
+                ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
+                ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
+                ->get();
         } else {
-            $db_user_account->where(RC_DB::raw('ua.is_paid'), 0);
-        }
+            $type_count = $db_user_account->select(RC_DB::raw('SUM(IF(ua.is_paid = 0, 1, 0)) as wait'),
+                RC_DB::raw('SUM(IF(ua.is_paid = 1, 1, 0)) as finished'),
+                RC_DB::raw('SUM(IF(ua.is_paid = 2, 1, 0)) as canceled'))->first();
 
-        $count = $db_user_account->count();
-        $page  = new ecjia_page($count, 15, 6);
+            if ($filter['type'] == 'finished') {
+                $db_user_account->where(RC_DB::raw('ua.is_paid'), 1);
+            } elseif ($filter['type'] == 'canceled') {
+                $db_user_account->where(RC_DB::raw('ua.is_paid'), 2);
+            } else {
+                $db_user_account->where(RC_DB::raw('ua.is_paid'), 0);
+            }
+
+            $count = $db_user_account->count();
+            $page  = new ecjia_page($count, 15, 6);
+
+            $list = $db_user_account
+                ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
+                ->take(15)
+                ->skip($page->start_id - 1)
+                ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
+                ->get();
+        }
 
         $payment_method = RC_Loader::load_app_class('payment_method', 'payment');
         $payment_list   = $payment_method->available_payment_list(false);
@@ -617,15 +645,9 @@ class admin extends ecjia_admin
             }
         }
 
-        $list = $db_user_account
-            ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
-            ->take(15)
-            ->skip($page->start_id - 1)
-            ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
-            ->get();
-
         $withdraw_fee = ecjia::config('withdraw_fee');
 
+        $arr = [];
         if (!empty($list)) {
             foreach ($list as $key => $value) {
                 $list[$key]['surplus_amount'] = ecjia_price_format(abs($value['amount']), false);
@@ -636,8 +658,20 @@ class admin extends ecjia_admin
                 $list[$key]['formated_withdraw_fee'] = ecjia_price_format($list[$key]['withdraw_fee']);
                 $list[$key]['real_amount']           = abs($value['apply_amount']) - $list[$key]['withdraw_fee'];
                 $list[$key]['formated_real_amount']  = ecjia_price_format($list[$key]['real_amount']);
+
+                $arr[$key]['order_sn']       = $list[$key]['order_sn'];
+                $arr[$key]['user_name']      = $list[$key]['user_name'];
+                $arr[$key]['surplus_amount'] = $list[$key]['surplus_amount'];
+                $arr[$key]['payment']        = $list[$key]['payment'];
+                $arr[$key]['add_date']       = $list[$key]['add_date'];
+                $arr[$key]['status']         = $list[$key]['is_paid'] == 1 ? '已完成' : ($list[$key]['is_paid'] == 0 ? '待审核' : '已取消');
             }
         }
+
+        if ($return_all) {
+            return $arr;
+        }
+
         return array('list' => $list, 'filter' => $filter, 'page' => $page->show(5), 'desc' => $page->page_desc(), 'type_count' => $type_count);
     }
 

@@ -13,7 +13,7 @@
 		<!-- {if $ur_here}{$ur_here}{/if} -->
 
 		{if !$filter.type}
-		<a class="btn plus_or_reply" href=""><i class="fontello-icon-download"></i>导出Excel</a>
+		<a class="btn plus_or_reply" href='{RC_Uri::url("withdraw/admin/download")}'><i class="fontello-icon-download"></i>导出Excel</a>
 		{/if}
 
 		<!-- {if $action_link} -->
