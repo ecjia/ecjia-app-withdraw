@@ -80,6 +80,8 @@ class admin extends ecjia_admin
         RC_Script::enqueue_script('admin', RC_App::apps_url('statics/js/admin.js', __FILE__));
         RC_Style::enqueue_style('admin', RC_App::apps_url('statics/css/admin.css', __FILE__), array());
 
+        RC_Script::enqueue_script('koala', RC_App::apps_url('statics/js/koala.js', __FILE__));
+
         $account_jslang = array(
             'keywords_required' => RC_Lang::get('user::user_account.keywords_required'),
             'username_required' => RC_Lang::get('user::user_account.username_required'),
@@ -125,10 +127,32 @@ class admin extends ecjia_admin
         $this->assign('ur_here', '线下提现申请');
         $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init'), 'text' => RC_Lang::get('user::user_account.withdraw_apply')));
 
-        $payment = get_payment();
-        $this->assign('payment', $payment);
+        $payment     = get_payment();
+        $has_payment = $has_pay_wxpay = $has_pay_bank = false;
+
+        if (!empty($payment)) {
+            foreach ($payment as $k => $v) {
+                if (in_array($v['pay_code'], array('pay_wxpay', 'pay_bank'))) {
+                    $has_payment = true;
+                    if ($v['pay_code'] == 'pay_wxpay') {
+                        $has_pay_wxpay = true;
+                    }
+                    if ($v['pay_code'] == 'pay_bank') {
+                        $has_pay_bank = true;
+                    }
+                }
+            }
+        }
+        $this->assign('has_payment', $has_payment);
+        $this->assign('has_pay_wxpay', $has_pay_wxpay);
+        $this->assign('has_pay_bank', $has_pay_bank);
 
         $this->assign('form_action', RC_Uri::url('withdraw/admin/insert'));
+
+        //最小提现金额
+        $withdraw_min_amount = ecjia::config('withdraw_min_amount');
+        $withdraw_min_amount = !empty($withdraw_min_amount) ? $withdraw_min_amount : 1;
+        $this->assign('withdraw_min_amount', $withdraw_min_amount);
 
         $this->display('admin_account_edit.dwt');
     }
@@ -141,17 +165,17 @@ class admin extends ecjia_admin
         $this->admin_priv('withdraw_manage');
 
         /* 初始化变量 */
-        $id            = isset($_POST['id']) ? intval($_POST['id']) : 0;
-        $amount        = !empty($_POST['amount']) ? floatval($_POST['amount']) : 0;
-        $process_type  = 1; //提现
-        $user_mobile   = !empty($_POST['user_mobile']) ? trim($_POST['user_mobile']) : '';
-        $admin_note    = !empty($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
-        $user_note     = !empty($_POST['user_note']) ? trim($_POST['user_note']) : '';
-        $recharge_type = !empty($_POST['recharge_type']) ? trim($_POST['recharge_type']) : '';
-        $amount_count  = $amount;
+        $id           = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $amount       = !empty($_POST['amount']) ? floatval($_POST['amount']) : 0;
+        $process_type = 1; //提现
+        $user_mobile  = !empty($_POST['user_mobile']) ? trim($_POST['user_mobile']) : '';
+        $admin_note   = !empty($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
+        $user_note    = !empty($_POST['user_note']) ? trim($_POST['user_note']) : '';
+        $amount_count = $amount;
+        $payment      = trim($_POST['payment']);
 
         /* 验证参数有效性  */
-        if (!is_numeric($amount) || empty($amount) || $amount <= 0 || strpos($amount, '.') > 0) {
+        if (!is_numeric($amount) || empty($amount) || $amount <= 0) {
             return $this->showmessage(RC_Lang::get('user::user_account.js_languages.deposit_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
@@ -161,78 +185,84 @@ class admin extends ecjia_admin
             return $this->showmessage(RC_Lang::get('user::user_account.username_not_exist'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        /*金额必须为1元起*/
-        if (abs($amount) < 1) {
-            return $this->showmessage(RC_Lang::get('user::user_account.min_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        //最小提现金额
+        $withdraw_min_amount = ecjia::config('withdraw_min_amount');
+        $withdraw_min_amount = !empty($withdraw_min_amount) ? $withdraw_min_amount : 1;
+        if (abs($amount) < $withdraw_min_amount) {
+            return $this->showmessage('提现金额不能小于最低提现金额：' . $withdraw_min_amount . '元', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
         if (empty($payment)) {
             return $this->showmessage(RC_Lang::get('user::user_account.js_languages.pay_code_empty'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        /* 检查余额是否足够 */
-        $user_account = user_account::get_user_money($user_info['user_id']);
-        /* 如果扣除的余额多于此会员拥有的余额，提示 */
-        if ($amount > $user_account) {
-            return $this->showmessage(RC_Lang::get('user::user_account.surplus_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        $withdraw_fee = ecjia::config('withdraw_fee');
+        if ($withdraw_fee > 0) {
+            $pay_fee = $amount * $withdraw_fee / 100;
+        } else {
+            $pay_fee = 0.00;
         }
 
-        /* 入库的操作 */
-        if ($process_type == 1) {
-            $amount = (-1) * $amount;
+        /* 检查余额是否足够 */
+        $user_account = user_account::get_user_money($user_info['user_id']);
+        if ($amount > ($user_account - $pay_fee)) {
+            return $this->showmessage('您要申请提现的金额超过了您现有的余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
         $is_paid = 0;
-        if ($recharge_type == 1) {
+        if ($payment == 'pay_bank') {
             $is_paid = 1;
         }
 
-        $order_sn = ecjia_order_deposit_sn();
+        $order_sn      = ecjia_order_deposit_sn();
+        $insert_amount = (-1) * $amount;
 
         $data = array(
             'user_id'      => $user_info['user_id'],
             'admin_user'   => $_SESSION['admin_name'],
-            'amount'       => $amount,
+            'amount'       => $insert_amount,
+            'apply_amount' => $amount,
             'add_time'     => RC_Time::gmtime(),
             'admin_note'   => $admin_note,
             'user_note'    => $user_note,
             'process_type' => $process_type,
+            'payment'      => $payment,
             'is_paid'      => $is_paid,
             'order_sn'     => $order_sn,
-            'from_type'    => 'admin',
-            'from_value'   => $_SESSION['admin_id'],
+            'pay_fee'      => $pay_fee > 0 ? $pay_fee : 0.00,
+            'apply_amount' => $amount > 0 ? $amount : 0.00,
+            'from_type'    => 'admim',
+            'from_type'    => $user_info['user_id'],
         );
 
         if ($is_paid == 1) {
             $data['paid_time'] = RC_Time::gmtime();
         }
+        $account_id = RC_DB::table('user_account')->insertGetId($data);
 
-        $accountid = RC_DB::table('user_account')->insertGetId($data);
-
-        /* 更新会员余额数量 */
-        if ($is_paid == 1) {
-            $change_desc = $amount > 0 ? RC_Lang::get('user::user_account.surplus_type.0') : RC_Lang::get('user::user_account.surplus_type.1');
-            $change_type = $amount > 0 ? ACT_SAVING : ACT_DRAWING;
-
-            change_account_log($user_info['user_id'], $amount, 0, 0, 0, $change_desc, $change_type);
-        } else {
-            //提现申请且到款状态为未确认状态时；且提现申请成功
-            if (!empty($accountid) && empty($is_paid)) {
-                //提现申请成功，记录account_log；从余额中冻结提现金额
-                $frozen_money = abs($amount);
-                $user_money   = $amount;
-
-                $options = array(
-                    'user_id'      => $user_info['user_id'],
-                    'frozen_money' => $frozen_money,
-                    'user_money'   => $user_money,
-                    'change_type'  => ACT_DRAWING,
-                    'change_desc'  => '【申请提现】',
-                );
-
-                RC_Api::api('user', 'account_change_log', $options);
-            }
+        if (empty($account_id)) {
+            return $this->showmessage('此次操作失败，请返回重试！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
+        /* 插入支付流水记录*/
+        RC_Api::api('payment', 'save_payment_record', [
+            'order_sn'   => $order_sn,
+            'total_fee'  => $amount + $pay_fee,
+            'trade_type' => 'withdraw',
+        ]);
+
+        //提现申请成功，记录account_log；从余额中冻结提现金额
+        $frozen_money = $amount;
+        $user_money   = '-' . ($amount + $pay_fee);
+
+        $options = array(
+            'user_id'      => $_SESSION['user_id'],
+            'frozen_money' => $frozen_money + $pay_fee,
+            'user_money'   => $user_money,
+            'change_type'  => ACT_DRAWING,
+            'change_desc'  => '【申请提现】',
+        );
+
+        RC_Api::api('user', 'account_change_log', $options);
 
         ecjia_admin::admin_log(RC_Lang::get('user::user_account.log_username') . $user_info['user_name'] . ',' . '提现' . $amount, 'add', 'withdraw_apply');
 
@@ -297,7 +327,7 @@ class admin extends ecjia_admin
         $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
 
         /* 初始化 */
-        $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $is_paid    = isset($_POST['confirm']) ? 1 : 2;
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
 
@@ -518,6 +548,22 @@ class admin extends ecjia_admin
         }
     }
 
+    //计算提现手续费
+    public function check_pay_fee()
+    {
+        $amount = floatval($_POST['val']);
+        //提现手续费计算
+        $withdraw_fee = ecjia::config('withdraw_fee');
+        if ($withdraw_fee > 0) {
+            $pay_fee = $amount * $withdraw_fee / 100;
+        } else {
+            $pay_fee = 0.00;
+        }
+
+        $result = array('pay_fee' => ecjia_price_format($pay_fee));
+        return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, $result);
+    }
+
     /**
      * 获取提现申请列表
      */
@@ -578,11 +624,18 @@ class admin extends ecjia_admin
             ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
             ->get();
 
+        $withdraw_fee = ecjia::config('withdraw_fee');
+
         if (!empty($list)) {
             foreach ($list as $key => $value) {
                 $list[$key]['surplus_amount'] = ecjia_price_format(abs($value['amount']), false);
                 $list[$key]['add_date']       = RC_Time::local_date(ecjia::config('time_format'), $value['add_time']);
                 $list[$key]['payment']        = empty($pay_name[$value['payment']]) ? strip_tags($value['payment']) : strip_tags($pay_name[$value['payment']]);
+
+                $list[$key]['withdraw_fee']          = abs($value['apply_amount']) * $withdraw_fee / 100;
+                $list[$key]['formated_withdraw_fee'] = ecjia_price_format($list[$key]['withdraw_fee']);
+                $list[$key]['real_amount']           = abs($value['apply_amount']) - $list[$key]['withdraw_fee'];
+                $list[$key]['formated_real_amount']  = ecjia_price_format($list[$key]['real_amount']);
             }
         }
         return array('list' => $list, 'filter' => $filter, 'page' => $page->show(5), 'desc' => $page->page_desc(), 'type_count' => $type_count);

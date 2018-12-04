@@ -57,26 +57,48 @@
         },
 
         validate: function () {
-            $(".user-mobile").blur(function () {
-                var $this = $(this);
-                var url = $this.attr('action');
-                var mobile = $this.val();
-                var data = {
-                    user_mobile: mobile,
+            $(".user-mobile").koala({
+                delay: 500,
+                keyup: function (event) {
+                    var $this = $(this);
+                    var url = $this.attr('action');
+                    var mobile = $this.val();
+                    var data = {
+                        user_mobile: mobile,
+                    }
+
+                    $.post(url, data, function (data) {
+                        if (data.state == 'error') {
+                            $(".control-group-user").addClass("hide");
+                            ecjia.admin.showmessage(data);
+                        }
+
+                        if (data.status == 1) {
+                            $(".control-group-user").removeClass("hide");
+                            $(".control-group-user").find('.userinfo').html(data.username);
+                            $(".control-group-user").find('.user_money').html(data.user_money);
+                            $(".control-group-user").find('.wechat_nickname').find('span').html(data.wechat_nickname);
+                        }
+                    }, 'json');
                 }
+            });
 
-                $.post(url, data, function (data) {
-                    if (data.state == 'error') {
-                        ecjia.admin.showmessage(data);
+            $('input[name="amount"]').koala({
+                delay: 500,
+                keyup: function (event) {
+                    var $this = $(this);
+                    var url = $this.attr('data-url');
+                    var val = $this.val();
+                    var data = {
+                        val: val,
                     }
-
-                    if (data.status == 1) {
-                        $(".control-group-user").removeClass("hide");
-                        $(".control-group-user").find('.userinfo').html(data.username);
-                        $(".control-group-user").find('.user_money').html(data.user_money);
-                        $(".control-group-user").find('.wechat_nickname').find('span').html(data.wechat_nickname);
-                    }
-                }, 'json');
+                    $.post(url, data, function (data) {
+                        if (data.state == 'error') {
+                            ecjia.admin.showmessage(data);
+                        }
+                        $(".withdraw_pay_fee").html(data.pay_fee);
+                    }, 'json');
+                }
             });
         },
 
