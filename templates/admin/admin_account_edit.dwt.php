@@ -13,7 +13,7 @@
 	<button type="button" class="close" data-dismiss="alert" aria-hidden="true"><i class="fa fa-times" data-original-title=""
 		 title=""></i></button>
 	<p><strong>温馨提示：</strong></p>
-	<p>线下提现申请：指用户通过线下人工或其他渠道套现由管理员提交申请后自动记录对应账号内提现数据及金额变动。</p>
+	<p>线下提现申请：指用户通过线下人工或其他渠道套现，由管理员提交申请后，自动记录对应账号内提现数据及金额变动。</p>
 </div>
 
 <div>

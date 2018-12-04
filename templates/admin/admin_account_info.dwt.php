@@ -82,7 +82,7 @@
 
 						<tr>
 							<td><div align="right"><strong>提现方式：</strong></div></td>
-							<td>{if $account_info.pay_name}{$account_info.pay_name}{/if}</td>
+							<td>{if $account_info.pay_name}{$account_info.pay_name}{else}银行转账{/if}</td>
 							<td><div align="right"><strong>提现账户：</strong></div></td>
 							<td></td>
 						</tr>
@@ -130,6 +130,10 @@
 								{else}
 									<input class="btn btn-gebo" type="submit" value="{lang key='system::system.button_submit'}" />
 								{/if}
+									<div class="m_t5">
+										【同意】向微信发送打款请求，只有通过微信方确认打款后，订单才会更改为“已完成”状态；<br/>
+										【取消】操作后，订单状态更改为“已取消”，提现金额返还给对应账号；
+									</div>
 								</td>
 							</tr>
 						</tbody>

@@ -16,16 +16,7 @@
                 var start_date = $("input[name='start_date']").val();
                 var end_date = $("input[name='end_date']").val();
 
-                if (start_date == '' || end_date == '') {
-                    var data = {
-                        message: '开始或结束时间不能为空',
-                        state: "error",
-                    };
-                    ecjia.admin.showmessage(data);
-                    return false;
-                }
-
-                if (start_date >= end_date) {
+                if (start_date != '' && end_date != '' && start_date >= end_date) {
                     var data = {
                         message: '开始时间不能大于或等于结束时间',
                         state: "error",
