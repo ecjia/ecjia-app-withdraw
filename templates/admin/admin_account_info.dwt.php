@@ -132,7 +132,7 @@
 									<input class="btn btn-gebo" type="submit" value="{lang key='system::system.button_submit'}" />
 								{/if}
 									<div class="m_t5">
-										【同意】向微信发送打款请求，只有通过微信方确认打款后，订单才会更改为“已完成”状态；<br/>
+										【同意】操作后，同意并打款给当前用户；<br/>
 										【取消】操作后，订单状态更改为“已取消”，提现金额返还给对应账号；
 									</div>
 								</td>
