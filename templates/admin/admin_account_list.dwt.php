@@ -108,9 +108,9 @@
 					</td>
 					<td><a class="data-pjax" href='{url path="withdraw/admin/check" args="order_sn={$item.order_sn}&id={$item.id}{if $type}&type={$type}{/if}"}'>{$item.order_sn}</a></td>
 					<td>{if $item.user_name}{$item.user_name}{else}{lang key='user::user_account.no_user'}{/if}</td>
-					<td align="right">{$item.surplus_amount}</td>
-					<td align="center">{$item.formated_withdraw_fee}</td>
-					<td align="center">{$item.formated_real_amount}</td>
+					<td align="right">{$item.apply_amount}</td>
+					<td align="center">{$item.formated_pay_fee}</td>
+					<td align="center">{$item.formated_amount}</td>
 					<td>{if $item.payment}{$item.payment}{else}银行转账{/if}</td>
 					<td align="center">{$item.add_date}</td>
 					<td align="center">{if $item.is_paid eq 1}{lang key='user::user_account.confirm'}{elseif $item.is_paid eq 0}{lang

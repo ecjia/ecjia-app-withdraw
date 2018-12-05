@@ -54,6 +54,9 @@
                     var $this = $(this);
                     var url = $this.attr('action');
                     var mobile = $this.val();
+                    if (mobile.length < 11) {
+                        return false;
+                    }
                     var data = {
                         user_mobile: mobile,
                     }
@@ -74,7 +77,7 @@
                 }
             });
 
-            $('input[name="amount"]').koala({
+            $('input[name="apply_amount"]').koala({
                 delay: 500,
                 keyup: function (event) {
                     var $this = $(this);
