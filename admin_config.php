@@ -46,28 +46,58 @@
 //
 defined('IN_ECJIA') or exit('No permission resources.');
 
-class withdraw_admin_plugin
+class admin_config extends ecjia_admin
 {
-    public static function withdraw_admin_menu_api($menus)
+    public function __construct()
     {
-        $menus->add_submenu([
-            ecjia_admin::make_admin_menu('divider', '', '', 30)->add_purview(array('withdraw_manage', 'surplus_manage')),
-            ecjia_admin::make_admin_menu('refund_list', '提现申请', RC_Uri::url('withdraw/admin/init'), 32)->add_purview('withdraw_manage'),
-        ]);
+        parent::__construct();
 
-        return $menus;
+        Ecjia\App\Printer\Helper::assign_adminlog_content();
+
+        //全局JS和CSS
+        RC_Script::enqueue_script('jquery-validate');
+        RC_Script::enqueue_script('jquery-form');
+        RC_Script::enqueue_script('smoke');
+        RC_Script::enqueue_script('jquery-chosen');
+        RC_Style::enqueue_style('chosen');
+        RC_Script::enqueue_script('jquery-uniform');
+        RC_Style::enqueue_style('uniform-aristo');
+        RC_Script::enqueue_script('bootstrap-placeholder', RC_Uri::admin_url('statics/lib/dropper-upload/bootstrap-placeholder.js'), array(), false, true);
+
+        RC_Script::enqueue_script('admin_config', RC_App::apps_url('statics/js/admin_config.js', __FILE__), array(), false, false);
     }
 
-    public static function append_admin_setting_group($menus)
+    public function init()
     {
-        $menus[] = ecjia_admin::make_admin_menu('nav-header', '会员提现', '', 48)->add_purview(array('surplus_manage'));
-        $menus[] = ecjia_admin::make_admin_menu('withdraw_setting', '提现设置', RC_Uri::url('withdraw/admin_config/init'), 49)->add_purview('withdraw_manage');
-        return $menus;
+        $this->admin_priv('surplus_manage');
+
+        ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here('提现设置'));
+
+        $this->assign('ur_here', '提现设置');
+        $this->assign('form_action', RC_Uri::url('withdraw/admin_config/update'));
+
+        $this->assign('withdraw_fee', ecjia::config('withdraw_fee'));
+        $this->assign('withdraw_min_amount', ecjia::config('withdraw_min_amount'));
+
+        $this->assign('current_code', 'withdraw_setting');
+        $this->display('withdraw_setting.dwt');
     }
+
+    public function update()
+    {
+        $this->admin_priv('printer_manage', ecjia::MSGTYPE_JSON);
+
+        $withdraw_fee        = !empty($_POST['withdraw_fee']) ? floatval($_POST['withdraw_fee']) : 0;
+        $withdraw_min_amount = !empty($_POST['withdraw_min_amount']) ? floatval($_POST['withdraw_min_amount']) : 0;
+        if ($withdraw_min_amount < 0) {
+            return $this->showmessage('最小提现金额不能小于0', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
+        ecjia_config::instance()->write_config('withdraw_fee', $withdraw_fee);
+        ecjia_config::instance()->write_config('withdraw_min_amount', $withdraw_min_amount);
+
+        return $this->showmessage('保存成功', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => RC_Uri::url('withdraw/admin_config/init')));
+    }
+
 }
-
-RC_Hook::add_filter('finance_admin_menu_api', array('withdraw_admin_plugin', 'withdraw_admin_menu_api'));
-
-RC_Hook::add_action('append_admin_setting_group', array('withdraw_admin_plugin', 'append_admin_setting_group'));
-
-// end
+//end
