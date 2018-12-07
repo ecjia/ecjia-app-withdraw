@@ -142,8 +142,12 @@ class admin extends ecjia_admin
             }
         }
         $this->assign('has_payment', $has_payment);
-        $this->assign('has_pay_wxpay', $has_pay_wxpay);
         $this->assign('has_pay_bank', $has_pay_bank);
+
+        if (!$has_pay_bank) {
+            $warning = __('您还没有安装银行转账插件，请去插件中心安装。');
+            ecjia_screen::get_current_screen()->add_admin_notice(new admin_notice($warning));
+        }
 
         $this->assign('form_action', RC_Uri::url('withdraw/admin/insert'));
 
