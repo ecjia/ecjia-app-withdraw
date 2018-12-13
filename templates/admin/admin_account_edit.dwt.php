@@ -80,10 +80,13 @@
 				<div class="control-group formSep ">
 					<label class="control-label">提现方式：</label>
 					<div class="controls chk_radio">
+						{if $has_pay_wxpay}
+						<input class="uni_style" type="radio" name="payment" value="pay_wxpay" checked/><span>微信钱包</span>
+						{/if}
 						{if $has_pay_bank}
 						<input class="uni_style" type="radio" name="payment" value="pay_bank" checked/><span>银行转账</span>
 						{/if}
-						<!-- <span class="help-block">选择微信钱包后确认，系统会向微信发送打款请求，并在对应会员账户中生成对应提现记录，当请求被微信方处理成功后，申请会被自动处理为已完成状态</span> -->
+						<span class="help-block">选择微信钱包后确认，系统会向微信发送打款请求，并在对应会员账户中生成对应提现记录，当请求被微信方处理成功后，申请会被自动处理为已完成状态</span>
 						<span class="help-block">当选择银行转账提现后，需工作人员线下打款确认，申请才会被处理为已完成状态。</span>
 					</div>
 				</div>

@@ -85,7 +85,13 @@
 							<td><div align="right"><strong>提现方式：</strong></div></td>
 							<td>{if $account_info.pay_name}{$account_info.pay_name}{else}银行转账{/if}</td>
 							<td><div align="right"><strong>提现账户：</strong></div></td>
-							<td></td>
+							<td>
+								{if $account_info.wechat_nickname}
+									微信昵称<strong class="ecjiafc-red ecjiaf-fs3 m_l5">（{$account_info.wechat_nickname}）</strong>
+								{else}
+									未绑定
+								{/if}
+							</td>
 						</tr>
 
 						<tr>

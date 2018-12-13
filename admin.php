@@ -128,21 +128,24 @@ class admin extends ecjia_admin
         $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init'), 'text' => RC_Lang::get('user::user_account.withdraw_apply')));
 
         $payment     = get_payment();
-        $has_payment = $has_pay_bank = false;
+        $has_payment = $has_pay_bank = $has_pay_wxpay = false;
 
         if (!empty($payment)) {
             foreach ($payment as $k => $v) {
-                // if (in_array($v['pay_code'], array('pay_wxpay', 'pay_bank'))) {
-                if ($v['pay_code'] == 'pay_bank') {
+                if (in_array($v['pay_code'], array('pay_wxpay', 'pay_bank'))) {
                     $has_payment = true;
                     if ($v['pay_code'] == 'pay_bank') {
                         $has_pay_bank = true;
+                    }
+                    if ($v['pay_code'] == 'pay_bank') {
+                        $has_pay_wxpay = true;
                     }
                 }
             }
         }
         $this->assign('has_payment', $has_payment);
         $this->assign('has_pay_bank', $has_pay_bank);
+        $this->assign('has_pay_wxpay', $has_pay_wxpay);
 
         if (!$has_pay_bank) {
             $warning = __('您还没有安装银行转账插件，请去插件中心安装。');
@@ -503,6 +506,22 @@ class admin extends ecjia_admin
 
         $this->assign('check_action', RC_Uri::url('withdraw/admin/action'));
         $this->assign('form_action', RC_Uri::url('withdraw/admin/update'));
+
+        if ($account_info['payment'] == 'pay_wxpay') {
+            $connect_info = RC_DB::table('connect_user')->where('connect_code', 'sns_wechat')->where('user_id', $account_info['user_id'])->first();
+
+            if (!empty($connect_info)) {
+                $ect_uid = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->pluck('ect_uid');
+                //修正绑定信息
+                if (empty($ect_uid)) {
+                    RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->update(array('ect_uid' => $connect_info['user_id']));
+                }
+                $wechat_info = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->where('ect_uid', $connect_info['user_id'])->first();
+                if (!empty($wechat_info)) {
+                    $account_info['wechat_nickname'] = $wechat_info['nickname'];
+                }
+            }
+        }
 
         $this->assign('account_info', $account_info);
         $this->assign('order_sn', $order_sn);
