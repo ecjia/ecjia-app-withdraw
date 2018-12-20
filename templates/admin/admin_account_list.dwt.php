@@ -89,7 +89,7 @@
 					<th class="w80">{lang key='user::user_account.user_id'}</th>
 					<th>申请金额</th>
 					<th>提现手续费</th>
-					<th>到帐金额</th>
+					<th>到账金额</th>
 					<th>提现方式</th>
 					<th class="w130">申请时间</th>
 					<th class="w70">处理状态</th>

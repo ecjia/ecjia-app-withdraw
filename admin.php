@@ -232,7 +232,7 @@ class admin extends ecjia_admin
             'order_sn'     => $order_sn,
             'pay_fee'      => $pay_fee, //手续费
             'amount'       => (-1) * $apply_amount, //申请金额
-            'real_amount'  => $apply_amount - $pay_fee, //到帐金额
+            'real_amount'  => $apply_amount - $pay_fee, //到账金额
             'from_type'    => 'admim',
             'from_value'    => $user_info['user_id'],
         );
