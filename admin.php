@@ -260,7 +260,7 @@ class admin extends ecjia_admin
 
         RC_Api::api('user', 'account_change_log', $options);
 
-        ecjia_admin::admin_log(RC_Lang::get('user::user_account.log_username') . $user_info['user_name'] . ',' . '提现' . $amount, 'add', 'withdraw_apply');
+        ecjia_admin::admin_log(RC_Lang::get('user::user_account.log_username') . $user_info['user_name'] . ',' . '提现' . $apply_amount, 'add', 'withdraw_apply');
 
         $links[0]['text'] = RC_Lang::get('user::user_account.back_withdraw_list');
         $links[0]['href'] = RC_Uri::url('withdraw/admin/init');
@@ -487,7 +487,7 @@ class admin extends ecjia_admin
 
         $account_info['formated_apply_amount']  = ecjia_price_format($apply_amount, false);
         $account_info['formated_pay_fee']       = ecjia_price_format($account_info['pay_fee'], false);
-        $account_info['formated_amount']        = ecjia_price_format(abs($account_info['amount']), false);
+        $account_info['formated_real_amount']   = ecjia_price_format(abs($account_info['real_amount']), false);
 
         $account_info['user_note']  = htmlspecialchars($account_info['user_note']);
         $account_info['add_time']   = RC_Time::local_date(ecjia::config('time_format'), $account_info['add_time']);

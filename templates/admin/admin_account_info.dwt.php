@@ -78,7 +78,7 @@
 							<td><div align="right"><strong>提现手续费：</strong></div></td>
 							<td>{$account_info.formated_pay_fee}</td>
 							<td><div align="right"><strong>到账金额：</strong></div></td>
-							<td><strong class="ecjiafc-red ecjiaf-fs3">{$account_info.formated_amount}</strong></td>
+							<td><strong class="ecjiafc-red ecjiaf-fs3">{$account_info.formated_real_amount}</strong></td>
 						</tr>
 
 						<tr>
