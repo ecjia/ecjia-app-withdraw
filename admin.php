@@ -234,7 +234,7 @@ class admin extends ecjia_admin
             'amount'       => (-1) * $apply_amount, //申请金额
             'real_amount'  => $apply_amount - $pay_fee, //到账金额
             'from_type'    => 'admim',
-            'from_value'    => $user_info['user_id'],
+            'from_value'   => $user_info['user_id'],
         );
 
         if ($is_paid == 1) {
@@ -364,10 +364,10 @@ class admin extends ecjia_admin
         } else {
             /* 否则更新信息 */
             $data = array(
-                'admin_user' => $_SESSION['admin_name'],
-                'admin_note' => $admin_note,
-                'is_paid'    => $is_paid,
-                'review_time'=> RC_Time::gmtime()
+                'admin_user'  => $_SESSION['admin_name'],
+                'admin_note'  => $admin_note,
+                'is_paid'     => $is_paid,
+                'review_time' => RC_Time::gmtime()
             );
             //如果是提现且取消；解冻提现时冻结的冻结金额；返还余额
             if ($is_paid == 2 && $account['process_type'] == 1) {
@@ -475,19 +475,19 @@ class admin extends ecjia_admin
         $order_sn = isset($_GET['order_sn']) ? $_GET['order_sn'] : '';
         $id       = isset($_GET['id']) ? $_GET['id'] : 0;
 
-        $account_info               = RC_DB::table('user_account')->where('id', $id)->first();
-        $account_info['user_name']  = RC_DB::table('users')->where('user_id', $account_info['user_id'])->pluck('user_name');
-        $account_info['pay_name']   = RC_DB::table('payment')->where('pay_code', $account_info['payment'])->pluck('pay_name');
-        $apply_amount               = $account_info['apply_amount'] != 0 ? $account_info['apply_amount'] : abs($account_info['amount']);
+        $account_info              = RC_DB::table('user_account')->where('id', $id)->first();
+        $account_info['user_name'] = RC_DB::table('users')->where('user_id', $account_info['user_id'])->pluck('user_name');
+        $account_info['pay_name']  = RC_DB::table('payment')->where('pay_code', $account_info['payment'])->pluck('pay_name');
+        $apply_amount              = $account_info['apply_amount'] != 0 ? $account_info['apply_amount'] : abs($account_info['amount']);
 
-        $account_info['formated_apply_amount']  = ecjia_price_format($apply_amount, false);
-        $account_info['formated_pay_fee']       = ecjia_price_format($account_info['pay_fee'], false);
-        $account_info['formated_real_amount']   = ecjia_price_format(abs($account_info['real_amount']), false);
+        $account_info['formated_apply_amount'] = ecjia_price_format($apply_amount, false);
+        $account_info['formated_pay_fee']      = ecjia_price_format($account_info['pay_fee'], false);
+        $account_info['formated_real_amount']  = ecjia_price_format(abs($account_info['real_amount']), false);
 
-        $account_info['user_note']  = htmlspecialchars($account_info['user_note']);
-        $account_info['add_time']   = RC_Time::local_date(ecjia::config('time_format'), $account_info['add_time']);
-        $account_info['pay_time']   = RC_Time::local_date(ecjia::config('time_format'), $account_info['paid_time']);
-        $account_info['review_time']= RC_Time::local_date(ecjia::config('time_format'), $account_info['review_time']);
+        $account_info['user_note']   = htmlspecialchars($account_info['user_note']);
+        $account_info['add_time']    = RC_Time::local_date(ecjia::config('time_format'), $account_info['add_time']);
+        $account_info['pay_time']    = RC_Time::local_date(ecjia::config('time_format'), $account_info['paid_time']);
+        $account_info['review_time'] = RC_Time::local_date(ecjia::config('time_format'), $account_info['review_time']);
 
         //订单流程状态
         if ($account_info['is_paid'] == 0) {
@@ -675,20 +675,20 @@ class admin extends ecjia_admin
                 $list[$key]['pay_fee']          = $value['pay_fee'];
                 $list[$key]['formated_pay_fee'] = ecjia_price_format($value['pay_fee']);
 
-                $real_amount                    = abs($value['amount']) - $value['pay_fee'];
-                $list[$key]['formated_amount']  = ecjia_price_format($real_amount);
+                $real_amount                   = abs($value['amount']) - $value['pay_fee'];
+                $list[$key]['formated_amount'] = ecjia_price_format($real_amount);
 
-                $arr[$key]['order_sn']              = $list[$key]['order_sn'];
-                $arr[$key]['user_name']             = $list[$key]['user_name'];
-                $arr[$key]['apply_amount']          = $list[$key]['apply_amount'];
-                $arr[$key]['formated_pay_fee']      = $list[$key]['formated_pay_fee'];
-                $arr[$key]['formated_amount']       = $list[$key]['formated_amount'];
-                $arr[$key]['payment']               = $list[$key]['payment'];
-                $arr[$key]['add_date']              = $list[$key]['add_date'];
-                $arr[$key]['status']                = $list[$key]['is_paid'] == 1 ? '已完成' : ($list[$key]['is_paid'] == 0 ? '待审核' : '已取消');
+                $arr[$key]['order_sn']         = $list[$key]['order_sn'];
+                $arr[$key]['user_name']        = $list[$key]['user_name'];
+                $arr[$key]['apply_amount']     = $list[$key]['apply_amount'];
+                $arr[$key]['formated_pay_fee'] = $list[$key]['formated_pay_fee'];
+                $arr[$key]['formated_amount']  = $list[$key]['formated_amount'];
+                $arr[$key]['payment']          = $list[$key]['payment'];
+                $arr[$key]['add_date']         = $list[$key]['add_date'];
+                $arr[$key]['status']           = $list[$key]['is_paid'] == 1 ? '已完成' : ($list[$key]['is_paid'] == 0 ? '待审核' : '已取消');
             }
         }
-        
+
 
         if ($return_all) {
             return $arr;
