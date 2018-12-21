@@ -339,12 +339,9 @@ class admin extends ecjia_admin
             return $this->showmessage('该订单已审核，请勿重复操作', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        /* 如果是退款申请, 并且已完成,更新此条记录,扣除相应的余额 */
+        /* 同意,更新此条记录,扣除相应的余额 */
         if ($is_paid == 1) {
             if ($account['process_type'] == 1) {
-                //$user_account = get_user_surplus($account['user_id']);
-                $user_account = user_account::get_user_money($account['user_id']);
-
                 $fmt_amount = str_replace('-', '', $amount);
 
                 /* 如果扣除的余额多于此会员的总冻结金额，提示 */
@@ -354,11 +351,8 @@ class admin extends ecjia_admin
 
                 update_user_account($id, $amount, $admin_note, 1);
 
-                /* 更新会员余额数量 */
-                // change_account_log($account['user_id'], $amount, 0, 0, 0, RC_Lang::get('user::user_account.surplus_type.1'), ACT_DRAWING); //提现申请时已记录
-
                 //解冻提现时冻结的冻结金额
-                $user_account = user_account::change_frozen_money($account['user_id'], $frozen_money);
+                user_account::change_frozen_money($account['user_id'], $frozen_money);
             } else {
                 /* 如果是预付款，并且已完成, 更新此条记录，增加相应的余额 */
                 update_user_account($id, $amount, $admin_note, 1);
@@ -366,6 +360,7 @@ class admin extends ecjia_admin
                 /* 更新会员余额数量 */
                 change_account_log($account['user_id'], $amount, 0, 0, 0, RC_Lang::get('user::user_account.surplus_type.0'), ACT_SAVING);
             }
+            //取消
         } else {
             /* 否则更新信息 */
             $data = array(
