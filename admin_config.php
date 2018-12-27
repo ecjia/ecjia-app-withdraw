@@ -91,20 +91,18 @@ class admin_config extends ecjia_admin
         $data = $cloud->getReturnData();
 
         $data = collect($data)->map(function ($item, $key) use ($bank_en_short) {
+            $checked = false;
             if (in_array($item['bank_en_short'], $bank_en_short)) {
-                return [
-                    'bank_name'     => $item['bank_name'],
-                    'bank_en_short' => $item['bank_en_short'],
-                    'bank_icon'     => $item['bank_icon'],
-                    'checked'       => true
-                ];
+                $checked = true;
             }
             return [
                 'bank_name'     => $item['bank_name'],
                 'bank_en_short' => $item['bank_en_short'],
-                'bank_icon'     => $item['bank_icon']
+                'bank_icon'     => $item['bank_icon'],
+                'checked'       => $checked
             ];
         })->toArray();
+        
         $this->assign('data', $data);
 
         $this->assign('current_code', 'withdraw_setting');
@@ -146,7 +144,7 @@ class admin_config extends ecjia_admin
                 }
             }
         }
-        
+
         $bank_list = serialize($bank_list);
 
         ecjia_config::instance()->write_config('withdraw_fee', $withdraw_fee);
