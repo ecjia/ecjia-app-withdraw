@@ -86,7 +86,7 @@ class admin_config extends ecjia_admin
         })->toArray();
 
         //获取ecjia_cloud对象
-        $cloud = ecjia_cloud::instance()->api('product/banks')->data()->run();
+        $cloud = ecjia_cloud::instance()->api('product/banks')->run();
         //获取每页可更新数
         $data = $cloud->getReturnData();
 
@@ -128,7 +128,7 @@ class admin_config extends ecjia_admin
         }
 
         //获取ecjia_cloud对象
-        $cloud = ecjia_cloud::instance()->api('product/banks')->data()->run();
+        $cloud = ecjia_cloud::instance()->api('product/banks')->run();
         //获取每页可更新数
         $data = $cloud->getReturnData();
 
