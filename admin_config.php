@@ -85,10 +85,8 @@ class admin_config extends ecjia_admin
             return $item['bank_en_short'];
         })->toArray();
 
-        //获取ecjia_cloud对象
-        $cloud = ecjia_cloud::instance()->api('product/banks')->run();
-        //获取每页可更新数
-        $data = $cloud->getReturnData();
+        //获取支持银行
+        $data =  Ecjia\App\Setting\BankWithdraw::allBanks();
 
         $data = collect($data)->map(function ($item, $key) use ($bank_en_short) {
             $checked = false;
