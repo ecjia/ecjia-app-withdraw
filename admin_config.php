@@ -79,6 +79,34 @@ class admin_config extends ecjia_admin
         $this->assign('withdraw_fee', ecjia::config('withdraw_fee'));
         $this->assign('withdraw_min_amount', ecjia::config('withdraw_min_amount'));
 
+        $bank_list = unserialize(ecjia::config('withdraw_support_banks'));
+
+        $bank_en_short = collect($bank_list)->map(function ($item, $key) {
+            return $item['bank_en_short'];
+        })->toArray();
+
+        //获取ecjia_cloud对象
+        $cloud = ecjia_cloud::instance()->api('product/banks')->data()->run();
+        //获取每页可更新数
+        $data = $cloud->getReturnData();
+
+        $data = collect($data)->map(function ($item, $key) use ($bank_en_short) {
+            if (in_array($item['bank_en_short'], $bank_en_short)) {
+                return [
+                    'bank_name'     => $item['bank_name'],
+                    'bank_en_short' => $item['bank_en_short'],
+                    'bank_icon'     => $item['bank_icon'],
+                    'checked'       => true
+                ];
+            }
+            return [
+                'bank_name'     => $item['bank_name'],
+                'bank_en_short' => $item['bank_en_short'],
+                'bank_icon'     => $item['bank_icon']
+            ];
+        })->toArray();
+        $this->assign('data', $data);
+
         $this->assign('current_code', 'withdraw_setting');
         $this->display('withdraw_setting.dwt');
     }
@@ -89,14 +117,41 @@ class admin_config extends ecjia_admin
 
         $withdraw_fee        = !empty($_POST['withdraw_fee']) ? floatval($_POST['withdraw_fee']) : 0;
         $withdraw_min_amount = !empty($_POST['withdraw_min_amount']) ? floatval($_POST['withdraw_min_amount']) : 0;
+        $bank_en_short       = !empty($_POST['bank_en_short']) ? $_POST['bank_en_short'] : [];
+
         if ($withdraw_min_amount < 0) {
             return $this->showmessage('最小提现金额不能小于0', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
         if ($withdraw_fee > 100) {
             return $this->showmessage('提现手续费不能大于100%', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
+        if (empty($bank_en_short)) {
+            return $this->showmessage('请至少选择一种提现银行', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
+        //获取ecjia_cloud对象
+        $cloud = ecjia_cloud::instance()->api('product/banks')->data()->run();
+        //获取每页可更新数
+        $data = $cloud->getReturnData();
+
+//        $collection = collect($data);
+//        $filtered = $collection->whereIn('bank_en_short', $bank_en_short);
+//        $bank_list = $filtered->all();
+
+        $bank_list = [];
+        if (!empty($data)) {
+            foreach ($data as $k => $v) {
+                if (in_array($v['bank_en_short'], $bank_en_short)) {
+                    $bank_list[] = $v;
+                }
+            }
+        }
+        
+        $bank_list = serialize($bank_list);
+
         ecjia_config::instance()->write_config('withdraw_fee', $withdraw_fee);
         ecjia_config::instance()->write_config('withdraw_min_amount', $withdraw_min_amount);
+        ecjia_config::instance()->write_config('withdraw_support_banks', $bank_list);
 
         return $this->showmessage('保存成功', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => RC_Uri::url('withdraw/admin_config/init')));
     }
