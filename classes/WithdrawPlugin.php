@@ -355,13 +355,13 @@ class WithdrawPlugin extends PluginModel
         }
         
         $config = $this->unserializeConfig($data->withdraw_config);
-         
+
         $handler = $this->pluginInstance($data->withdraw_code, $config);
         if (!$handler) {
             return new ecjia_error('plugin_not_found', $data->withdraw_code . ' plugin not found!');
         }
         
-        $handler->setPayment($data);
+        $handler->setPluginModel($data);
         
         return $handler;
     }
