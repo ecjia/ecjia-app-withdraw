@@ -199,7 +199,7 @@ class admin_plugin extends ecjia_admin
             $withdraw['withdraw_fee'] = 0;
         }
 
-        $this->assign('pay', $withdraw);
+        $this->assign('withdraw', $withdraw);
         $this->assign('form_action', RC_Uri::url('withdraw/admin_plugin/save'));
 
         $this->display('withdraw_edit.dwt');
