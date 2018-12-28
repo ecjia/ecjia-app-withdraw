@@ -72,6 +72,7 @@
                             $(".control-group-user").find('.userinfo').html(data.username);
                             $(".control-group-user").find('.user_money').html(data.user_money);
                             $(".control-group-user").find('.wechat_nickname').find('span').html(data.wechat_nickname);
+                            $('input[name="user_id"]').val(data.user_id);
                         }
                     }, 'json');
                 }

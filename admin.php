@@ -167,13 +167,13 @@ class admin extends ecjia_admin
      */
     public function insert()
     {
-        $this->admin_priv('withdraw_manage');
+        $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
 
         /* 初始化变量 */
         $id           = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $apply_amount = !empty($_POST['apply_amount']) ? floatval($_POST['apply_amount']) : 0; //申请金额
         $process_type = 1; //提现
-        $user_mobile  = !empty($_POST['user_mobile']) ? trim($_POST['user_mobile']) : '';
+        $user_id      = !empty($_POST['user_id']) ? intval($_POST['user_id']) : '';
         $admin_note   = !empty($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
         $user_note    = !empty($_POST['user_note']) ? trim($_POST['user_note']) : '';
         $payment      = trim($_POST['payment']);
@@ -183,7 +183,7 @@ class admin extends ecjia_admin
             return $this->showmessage(RC_Lang::get('user::user_account.js_languages.deposit_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        $user_info = RC_DB::table('users')->where('mobile_phone', $user_mobile)->first();
+        $user_info = RC_DB::table('users')->where('user_id', $user_id)->first();
         /* 此会员是否存在 */
         if (empty($user_info)) {
             return $this->showmessage(RC_Lang::get('user::user_account.username_not_exist'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
@@ -197,7 +197,7 @@ class admin extends ecjia_admin
         }
 
         if (empty($payment)) {
-            return $this->showmessage(RC_Lang::get('user::user_account.js_languages.pay_code_empty'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            return $this->showmessage('请选择提现方式', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
         $withdraw_fee = ecjia::config('withdraw_fee');
@@ -542,7 +542,6 @@ class admin extends ecjia_admin
             $user_info['formated_user_money'] = ecjia_price_format($user_info['user_money'], false);
 
             $connect_info = RC_DB::table('connect_user')->where('connect_code', 'sns_wechat')->where('user_id', $user_info['user_id'])->first();
-
             if (!empty($connect_info)) {
                 $ect_uid = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->pluck('ect_uid');
                 //修正绑定信息
@@ -555,7 +554,7 @@ class admin extends ecjia_admin
                 }
             }
 
-            $result = array('status' => 1, 'username' => $user_info['user_name'], 'user_money' => $user_info['formated_user_money'], 'wechat_nickname' => $wechat_nickname);
+            $result = array('status' => 1, 'username' => $user_info['user_name'], 'user_money' => $user_info['formated_user_money'], 'wechat_nickname' => $wechat_nickname, 'user_id' => $user_info['user_id']);
             return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, $result);
         }
     }
