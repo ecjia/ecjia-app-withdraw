@@ -45,7 +45,7 @@
 //  ---------------------------------------------------------------------------------
 //
 
-namespace Ecjia\App\Payment;
+namespace Ecjia\App\Withdraw;
 
 use Ecjia\System\Plugin\PluginModel;
 use ecjia_error;
