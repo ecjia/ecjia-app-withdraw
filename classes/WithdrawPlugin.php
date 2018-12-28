@@ -127,10 +127,10 @@ class WithdrawPlugin extends PluginModel
 
             if (!$data) {
                 /* 取得配置信息 */
-                $pay_config = serialize($config['forms']);
+                $withdraw_config = serialize($config['forms']);
 
                 /* 取得和验证支付手续费 */
-                $pay_fee    = array_get($config, 'withdraw_fee', 0);
+                $withdraw_fee    = array_get($config, 'withdraw_fee', 0);
 
                 /* 安装，检查该支付方式是否曾经安装过 */
                 $count = $this->where('withdraw_code', $config['withdraw_code'])->count();
@@ -140,8 +140,8 @@ class WithdrawPlugin extends PluginModel
                     $data = array(
                         'withdraw_name' 	=> $format_name,
                         'withdraw_desc' 	=> $format_description,
-                        'withdraw_config' 	=> $pay_config,
-                        'withdraw_fee' 		=> $pay_fee,
+                        'withdraw_config' 	=> $withdraw_config,
+                        'withdraw_fee' 		=> $withdraw_fee,
                         'enabled' 		    => 1
                     );
 
@@ -153,8 +153,8 @@ class WithdrawPlugin extends PluginModel
                         'withdraw_code' 	=> $config['withdraw_code'],
                         'withdraw_name' 	=> $format_name,
                         'withdraw_desc' 	=> $format_description,
-                        'withdraw_config' 	=> $pay_config,
-                        'withdraw_fee' 		=> $pay_fee,
+                        'withdraw_config' 	=> $withdraw_config,
+                        'withdraw_fee' 		=> $withdraw_fee,
                         'enabled' 		    => 1,
                         'is_online' 	    => $config['is_online'],
                     );
@@ -246,7 +246,7 @@ class WithdrawPlugin extends PluginModel
     
     /**
      * 取得已安装的支付方式(其中不包括线下支付的)
-     * @param   array   $available_plugins  可使用的插件，一维数组 ['pay_alipay', 'pay_balance']
+     * @param   array   $available_plugins  可使用的插件，一维数组 ['withdraw_alipay', 'withdraw_bank']
      * @param   bool    $include_balance    是否包含余额支付（冲值时不应包括）
      * @return  array   已安装的配送方式列表
      */
@@ -256,11 +256,11 @@ class WithdrawPlugin extends PluginModel
         
         $data = $model->select('withdraw_id', 'withdraw_code', 'withdraw_name', 'withdraw_fee')->get();
         
-        $pay_list = array();
+        $withdraw_list = array();
         	
         if (!empty($data)) {
             
-            $pay_list = $data->mapWithKeys(function ($item) use ($available_plugins) {
+            $withdraw_list = $data->mapWithKeys(function ($item) use ($available_plugins) {
                 if (empty($available_plugins)) {
                     $available_plugins = array_keys($this->getInstalledPlugins());
                 }
@@ -274,7 +274,7 @@ class WithdrawPlugin extends PluginModel
             });
         }
         
-        return $pay_list;
+        return $withdraw_list;
     }
     
     /**
@@ -293,17 +293,17 @@ class WithdrawPlugin extends PluginModel
         $data = $model->select('withdraw_id', 'withdraw_code', 'withdraw_name', 'withdraw_fee', 'is_online')
              ->orderby('withdraw_order', 'asc')->get();
 
-        $pay_list = array();
+        $withdraw_list = array();
          
         if (!empty($data)) {
         
-            $pay_list = $data->mapWithKeys(function ($item) use ($available_plugins) {
+            $withdraw_list = $data->mapWithKeys(function ($item) use ($available_plugins) {
                 if (empty($available_plugins)) {
                     $available_plugins = array_keys($this->getInstalledPlugins());
                 }
  
-                if (in_array($item['pay_code'], $available_plugins)) {
-                    $item['pay_name'] = $this->channel($item['withdraw_code'])->getDisplayName();
+                if (in_array($item['withdraw_code'], $available_plugins)) {
+                    $item['withdraw_name'] = $this->channel($item['withdraw_code'])->getDisplayName();
                     $item['format_withdraw_fee'] = strpos($item['withdraw_fee'], '%') !== false ? $item['withdraw_fee'] : ecjia_price_format($item['withdraw_fee'], false);
                     return array($item);
                 } else {
@@ -312,7 +312,7 @@ class WithdrawPlugin extends PluginModel
             });
         }
 
-        return $pay_list;
+        return $withdraw_list;
     }
     
     /**
@@ -320,14 +320,14 @@ class WithdrawPlugin extends PluginModel
      */
     public function defaultChannel()
     {
-        $data = $this->enabled()->orderBy('pay_order', 'asc')->first();
+        $data = $this->enabled()->orderBy('withdraw_order', 'asc')->first();
         
-        $config = $this->unserializeConfig($data->pay_config);
+        $config = $this->unserializeConfig($data->withdraw_config);
      
-        $handler = $this->pluginInstance($data->pay_code, $config);
+        $handler = $this->pluginInstance($data->withdraw_code, $config);
         
         if (!$handler) {
-            return new ecjia_error('code_not_found', $data->pay_code . ' plugin not found!');
+            return new ecjia_error('code_not_found', $data->withdraw_code . ' plugin not found!');
         }
         
         return $handler;
@@ -335,7 +335,7 @@ class WithdrawPlugin extends PluginModel
     
     /**
      * 获取某个插件的实例对象
-     * @param string|integer $code 类型为string时是pay_code，类型是integer时是pay_id
+     * @param string|integer $code 类型为string时是withdraw_code，类型是integer时是withdraw_id
      * @return \ecjia_error|\Ecjia\System\Plugin\AbstractPlugin>|\ecjia_error|\Ecjia\System\Plugin\AbstractPlugin
      */
     public function channel($code = null)
@@ -354,11 +354,11 @@ class WithdrawPlugin extends PluginModel
             return new ecjia_error('withdraw_not_found', $code . ' withdraw not found!');
         }
         
-        $config = $this->unserializeConfig($data->pay_config);
+        $config = $this->unserializeConfig($data->withdraw_config);
          
-        $handler = $this->pluginInstance($data->pay_code, $config);
+        $handler = $this->pluginInstance($data->withdraw_code, $config);
         if (!$handler) {
-            return new ecjia_error('plugin_not_found', $data->pay_code . ' plugin not found!');
+            return new ecjia_error('plugin_not_found', $data->withdraw_code . ' plugin not found!');
         }
         
         $handler->setPayment($data);
