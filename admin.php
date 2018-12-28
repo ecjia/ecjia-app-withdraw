@@ -120,7 +120,7 @@ class admin extends ecjia_admin
 
     public function add()
     {
-        $this->admin_priv('withdraw_manage');
+        $this->admin_priv('withdraw_update');
 
         ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here('线下提现申请'));
 
@@ -167,7 +167,7 @@ class admin extends ecjia_admin
      */
     public function insert()
     {
-        $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
+        $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
 
         /* 初始化变量 */
         $id           = isset($_POST['id']) ? intval($_POST['id']) : 0;
@@ -276,7 +276,7 @@ class admin extends ecjia_admin
     public function update()
     {
         /* 权限判断 */
-        $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
+        $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
 
         $id          = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $admin_note  = !empty($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
@@ -320,7 +320,7 @@ class admin extends ecjia_admin
     public function action()
     {
         /* 检查权限 */
-        $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
+        $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
 
         /* 初始化 */
         $id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
@@ -392,7 +392,7 @@ class admin extends ecjia_admin
     public function remove()
     {
         /* 检查权限 */
-        $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
+        $this->admin_priv('withdraw_delete', ecjia::MSGTYPE_JSON);
 
         $id = intval($_GET['id']);
 
@@ -427,7 +427,7 @@ class admin extends ecjia_admin
     public function batch_remove()
     {
         /* 检查权限 */
-        $this->admin_priv('withdraw_manage', ecjia::MSGTYPE_JSON);
+        $this->admin_priv('withdraw_delete', ecjia::MSGTYPE_JSON);
 
         if (isset($_POST['checkboxes'])) {
             $idArr = explode(',', $_POST['checkboxes']);

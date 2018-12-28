@@ -47,21 +47,17 @@
 defined('IN_ECJIA') or exit('No permission resources.');
 
 /**
- * 后台权限API
+ * ECJia 管理中心提现方式管理语言文件
  */
-class withdraw_admin_purview_api extends Component_Event_Api
-{
-
-    public function call(&$options)
-    {
-        $purviews = array(
-            array('action_name' => '提现管理', 'action_code' => 'withdraw_manage', 'relevance' => ''),
-            array('action_name' => '提现更新', 'action_code' => 'withdraw_update', 'relevance' => ''),
-            array('action_name' => '提现删除', 'action_code' => 'withdraw_delete', 'relevance' => ''),
-        );
-
-        return $purviews;
-    }
-}
+return array(
+    'js_lang' => array(
+        'lang_removeconfirm'      => '您确定要卸载该提现方式吗？',
+        'withdraw_name_required'  => '请输入提现方式名称',
+        'withdraw_name_minlength' => '提现名称长度不能小于3',
+        'withdraw_desc_required'  => '请输入提现描述',
+        'withdraw_desc_minlength' => '提现描述长度不能小于6',
+        'check_time'              => '开始日期不能大于结束日期',
+    ),
+);
 
 // end
