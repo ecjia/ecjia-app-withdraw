@@ -54,18 +54,23 @@ class withdraw_plugin_install_api extends Component_Event_Api {
 	
 	public function call(&$options)
     {
+        try {
 
-	    if (isset($options['file']) && $options['config']) {
+            if (isset($options['file']) && $options['config']) {
 
-            $WithdrawPlugin = new \Ecjia\App\Payment\WithdrawPlugin();
+                $WithdrawPlugin = new \Ecjia\App\Withdraw\WithdrawPlugin();
 
-            if ($WithdrawPlugin->pluginInstall($options['config'], $options['file'])) {
-                $WithdrawPlugin->addInstallPlugin($options['file']);
+                if ($WithdrawPlugin->pluginInstall($options['config'], $options['file'])) {
+                    $WithdrawPlugin->addInstallPlugin($options['file']);
+                }
+
+                return true;
+            } else {
+                return ecjia_plugin::add_error('plugin_install_error', __('插件参数不全'));
             }
 
-            return true;
-	    } else {
-            return ecjia_plugin::add_error('plugin_install_error', __('插件参数不全'));
+        } catch (\Symfony\Component\Debug\Exception\FatalErrorException $e) {
+            return ecjia_plugin::add_error('plugin_install_error', $e->getMessage());
         }
 	}
 }
