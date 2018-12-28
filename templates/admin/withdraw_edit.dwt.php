@@ -10,7 +10,7 @@
 <!-- {block name="main_content"} -->
 {if $withdraw.enabled neq 1}
 <div class="alert alert-error">
-	<strong>温馨提示：</strong>该支付方式已经禁用，如果您需要使用，请点击<a class="switch" href="javascript:;" data-url='{RC_Uri::url("withdraw/admin_plugin/enable", "code={$withdraw.withdraw_code}&from=edit")}' title="{lang key='withdraw::withdraw.enable'}">启用</a>。
+	<strong>温馨提示：</strong>该提现方式已经禁用，如果您需要使用，请点击<a class="switch" href="javascript:;" data-url='{RC_Uri::url("withdraw/admin_plugin/enable", "code={$withdraw.withdraw_code}&from=edit")}' title="{lang key='withdraw::withdraw.enable'}">启用</a>。
 </div>
 {/if}
 
@@ -24,7 +24,7 @@
 </div>
 <div class="row-fluid edit-page">
 	<div class="span12">
-		<form id="form-privilege"  class="form-horizontal"  name="editForm" action="{$form_action}" method="post" enctype="multipart/form-data" >
+		<form id="form-privilege" class="form-horizontal" name="editForm" action="{$form_action}" method="post" enctype="multipart/form-data" >
 			<fieldset>
 				<div class="control-group formSep">
 					<label class="control-label">{lang key='withdraw::withdraw.label_withdraw_name'}</label>
@@ -33,6 +33,7 @@
 						<span class="input-must">{lang key='system::system.require_field'}</span>
 					</div>
 				</div>
+
 				<div class="control-group formSep">
 					<label class="control-label">{lang key='withdraw::withdraw.label_withdraw_desc'}</label>
 					<div class="controls">
@@ -40,6 +41,7 @@
 						<span class="input-must">{lang key='system::system.require_field'}</span>
 					</div>
 				</div>
+
 				<!-- {if $withdraw.enabled eq 1} -->
 					<!-- {foreach from=$withdraw.withdraw_config item=config key=key} -->
 					<div class="control-group formSep">
@@ -72,27 +74,30 @@
                                 <a style="float: none" data-dismiss="fileupload" class="close fileupload-exists" href="index.php-uid=1&page=form_extended.html#">&times;</a>
                             </div>
                             {/if}
-
 							<!-- {/if} -->
+
 							<input name="cfg_name[]" type="hidden" value="{$config.name}" />
 							<input name="cfg_type[]" type="hidden" value="{$config.type}" />
 							<input name="cfg_lang[]" type="hidden" value="{$config.lang}" />
                             <input name="cfg_dir[]" type="hidden" value="{$config.dir}" />
-							{if $config.desc}
+
+                            {if $config.desc}
     						<span class="help-block">{$config.desc}</span>
     						{/if}
+
 							<!--the tenpay code -->
 							{if $key eq "0"}
-							{if $smarty.get.code eq "tenpay"}<input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key='withdraw::withdraw.ctenwithdraw_url'}')"/>
-							{elseif $smarty.get.code eq "tenpayc2c"} <input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key='withdraw::withdraw.ctenpayc2c_url'}')"/>
-							{/if}
+                                {if $smarty.get.code eq "tenpay"}<input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key='withdraw::withdraw.ctenwithdraw_url'}')"/>
+                                {elseif $smarty.get.code eq "tenpayc2c"} <input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key='withdraw::withdraw.ctenpayc2c_url'}')"/>
+                                {/if}
 							{/if}
 							<!--the tenpay code -->
 						</div>
 					</div>
 					<!-- {/foreach} -->
 				<!-- {/if} -->
-				<!-- 支付手续费 -->
+
+				<!-- 提现手续费 -->
 				<div class="control-group formSep">
 					<label class="control-label">{lang key='withdraw::withdraw.label_withdraw_fee'}</label>
 					<div class="controls">
@@ -104,20 +109,15 @@
 						{/if}
 					</div>
 				</div>
-				<!-- 货到付款 -->
-				<div class="control-group formSep">
-					<label  class="control-label">{lang key='withdraw::withdraw.withdraw_is_cod'}</label>
-					<div class="controls">
-						<label class="p_t5">{if $withdraw.is_cod == "1"}{lang key='system::system.yes'}{else}{lang key='system::system.no'}{/if}</label>
-					</div>
-				</div>
-				<!-- 在线支付 -->
+
+				<!-- 在线提现 -->
 				<div class="control-group formSep">
 					<label  class="control-label">{lang key='withdraw::withdraw.withdraw_is_online'}</label>
 					<div class="controls">
 						<label class="p_t5">{if $withdraw.is_online == "1"}{lang key='system::system.yes'}{else}{lang key='system::system.no'}{/if}</label>
 					</div>
 				</div>
+
 				<div class="control-group">
 					<div class="controls">
 						<button class="btn btn-gebo" type="submit" {if $withdraw.enabled neq 1}disabled{/if}>{lang key='system::system.button_submit'}</button>
@@ -126,6 +126,7 @@
 						<input type="hidden" name="is_online" value="{$withdraw.is_online}" />
 					</div>
 				</div>
+
 			</fieldset>
 		</form>
 	</div>
