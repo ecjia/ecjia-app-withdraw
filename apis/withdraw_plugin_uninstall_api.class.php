@@ -52,40 +52,21 @@ defined('IN_ECJIA') or exit('No permission resources.');
  */
 class withdraw_plugin_uninstall_api extends Component_Event_Api {
 	
-	public function call(&$options) {
-	    
-	    $plugin_data = array();
-	    if (isset($options['file'])) {
-	        $plugin_file = $options['file'];
-	        $plugin_data = RC_Plugin::get_plugin_data($plugin_file);
-	        
-	        $plugin_file = RC_Plugin::plugin_basename( $plugin_file );
-	        $plugin_dir = dirname($plugin_file);
-	    
-	        $plugins = ecjia_config::instance()->get_addon_config('withdraw_plugins', true, true);
-	        unset($plugins[$plugin_dir]);
-	    
-	        ecjia_config::instance()->set_addon_config('withdraw_plugins', $plugins, true, true);
-	    }
-	    
-	    if (isset($options['config']) && !empty($plugin_data['Name'])) {
-	        $format_name = $plugin_data['Name'];
-	        
-	        /* 检查输入 */
-	        if (empty($format_name) || empty($options['config']['withdraw_code'])) {
-	            return ecjia_plugin::add_error('plugin_uninstall_error', '支付方式名称不能为空');
-	        }
-	        
-	        /* 从数据库中删除支付方式 */
-	        // $db = RC_Loader::load_app_model('payment_model', 'payment');
-	        // $db->where("`pay_code` = '" . $options['config']['pay_code'] . "'")->delete();
-	        RC_DB::table('withdraw_method')->where('withdraw_code', $options['config']['withdraw_code'])->delete();
-	        
-	        /* 记录日志 */
-	        ecjia_admin::admin_log($format_name, 'uninstall', 'withdraw');
-	        
-	        return true;
-	    }
+	public function call(&$options)
+    {
+
+        if (isset($options['file']) && $options['config']) {
+
+            $WithdrawPlugin = new \Ecjia\App\Payment\WithdrawPlugin();
+
+            if ($WithdrawPlugin->pluginUninstall($options['config'], $options['file'])) {
+                $WithdrawPlugin->removeInstallPlugin($options['file']);
+            }
+
+            return true;
+        } else {
+            return ecjia_plugin::add_error('plugin_uninstall_error', __('插件参数不全'));
+        }
 
 	}
 }

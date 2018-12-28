@@ -52,78 +52,21 @@ defined('IN_ECJIA') or exit('No permission resources.');
  */
 class withdraw_plugin_install_api extends Component_Event_Api {
 	
-	public function call(&$options) {
-	    $plugin_data = array();
-	    if (isset($options['file'])) {
-	        $plugin_file = $options['file'];
-	        $plugin_data = RC_Plugin::get_plugin_data($plugin_file);
-	        
-	        $plugin_file = RC_Plugin::plugin_basename( $plugin_file );
-	        $plugin_dir = dirname($plugin_file);
-	        
-	        $plugins = ecjia_config::instance()->get_addon_config('withdraw_plugins', true, true);
-	        $plugins[$plugin_dir] = $plugin_file;
-	         
-	        ecjia_config::instance()->set_addon_config('withdraw_plugins', $plugins, true, true);
-	    }
-	   
-	    if (isset($options['config']) && !empty($plugin_data['Name'])) {
-	        $format_name = $plugin_data['Name'];
-	        $format_description = $plugin_data['Description'];
-	        
-	        /* 检查输入 */
-	        if (empty($format_name) || empty($options['config']['withdraw_code'])) {
-	            return ecjia_plugin::add_error('plugin_install_error', '支付方式名称或withdraw_code不能为空');
-	        }
-	       
-	        /* 检测支付名称重复 */
-	        $data = RC_DB::table('withdraw_method')->where('withdraw_name', $format_name)->where('withdraw_code', $options['config']['withdraw_code'])->count();
-	        
-	        if (!$data) {
-	            /* 取得配置信息 */
-	            $pay_config = serialize($options['config']['forms']);
-	             
-	            /* 取得和验证支付手续费 */
-	            $pay_fee    = empty($options['config']['withdraw_fee']) ? 0 : $options['config']['withdraw_fee'];
-	             
-	            /* 安装，检查该支付方式是否曾经安装过 */
-	         	$count = RC_DB::table('payment')->where('withdraw_code', $options['config']['withdraw_code'])->count();
-	         	
-	            if ($count > 0) {
-	                /* 该支付方式已经安装过, 将该支付方式的状态设置为 enable */
-	                $data = array(
-	                    'withdraw_name' 		=> $format_name,
-	                    'withdraw_desc' 		=> $format_description,
-	                    'withdraw_config' 	=> $pay_config,
-	                    'withdraw_fee' 		=> $pay_fee,
-	                    'enabled' 		=> 1
-	                );
-	                 
-	                RC_DB::table('payment')->where('withdraw_code', $options['config']['withdraw_code'])->update($data);
-	                 
-	            } else {
-	                /* 该支付方式没有安装过, 将该支付方式的信息添加到数据库 */
-	                $data = array(
-	                    'withdraw_code' 		=> $options['config']['pay_code'],
-	                    'withdraw_name' 		=> $format_name,
-	                    'withdraw_desc' 		=> $format_description,
-	                    'withdraw_config' 	=> $pay_config,
-	                    'withdraw_fee' 		=> $pay_fee,
-	                    'enabled' 		=> 1,
-	                    'is_online' 	=> $options['config']['is_online'],
-	                );
-	                RC_DB::table('withdraw_method')->insert($data);
-	            }
-	        } 
-	        /* 支付名称重复不处理
-	        else {
-	            return ecjia_plugin::add_error('plugin_install_error', __('支付方式已存在'));
-	        }*/
+	public function call(&$options)
+    {
 
-	        /* 记录日志 */
-	        ecjia_admin::admin_log($format_name, 'install', 'withdraw');
-	        return true;
-	    }
+	    if (isset($options['file']) && $options['config']) {
+
+            $WithdrawPlugin = new \Ecjia\App\Payment\WithdrawPlugin();
+
+            if ($WithdrawPlugin->pluginInstall($options['config'], $options['file'])) {
+                $WithdrawPlugin->addInstallPlugin($options['file']);
+            }
+
+            return true;
+	    } else {
+            return ecjia_plugin::add_error('plugin_install_error', __('插件参数不全'));
+        }
 	}
 }
 
