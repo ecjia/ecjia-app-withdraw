@@ -88,7 +88,7 @@ class admin_plugin extends ecjia_admin
 
         $this->assign('ur_here', '提现方式');
 
-        $plugins = ecjia_config::instance()->get_addon_config('withdraw_plugins', true, true);
+//        $plugins = ecjia_config::instance()->get_addon_config('withdraw_plugins', true, true);
 
         $data = RC_DB::table('withdrawal_method')->orderBy('withdraw_order')->get();
 
