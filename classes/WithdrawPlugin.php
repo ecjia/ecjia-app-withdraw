@@ -166,7 +166,9 @@ class WithdrawPlugin extends PluginModel
 
                 return true;
             } else {
-                return ecjia_plugin::add_error('plugin_install_error', __('提现方式已存在'));
+                //ecjia_plugin::add_error('plugin_install_error', __('提现方式已存在'));
+                //重复插件自动确认为已经安装
+                return true;
             }
 
         } else {
