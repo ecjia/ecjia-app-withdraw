@@ -24,6 +24,8 @@ class WithdrawUserBankModel extends Model
         'user_id',
         'user_type',
         'bank_type',
+        'add_time',
+        'update_time',
     ];
     
     /**
