@@ -46,6 +46,7 @@
 //
 namespace Ecjia\App\Withdraw;
 
+use Ecjia\App\Withdraw\Models\WithdrawUserBankModel;
 use Ecjia\System\Plugin\AbstractPlugin;
 
 /**
@@ -119,8 +120,10 @@ abstract class WithdrawAbstract extends AbstractPlugin
      */
     public function getUserBankcard($user_id, $user_type = 'user')
     {
-
-
+        return WithdrawUserBankModel::where('user_id', $user_id)
+            ->where('user_type', $user_type)
+            ->where('bank_type', $this->getBankType())
+            ->get();
     }
 
     /**
