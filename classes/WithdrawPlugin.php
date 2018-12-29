@@ -252,7 +252,7 @@ class WithdrawPlugin extends PluginModel
      * @param   bool    $include_balance    是否包含余额支付（冲值时不应包括）
      * @return  array   已安装的配送方式列表
      */
-    public function getOnlinePayments(array $available_plugins = array())
+    public function getOnlinePlugins(array $available_plugins = array())
     {
         $model = $this->online();
         
@@ -284,7 +284,7 @@ class WithdrawPlugin extends PluginModel
      * @param   int     $is_online          是否支持在线支付
      * @return  array   提现方式数组
      */
-    public function getAvailablePayments(array $available_plugins = array(), $is_online = false)
+    public function getAvailablePlugins(array $available_plugins = array(), $is_online = false)
     {
         $model = $this->enabled();
         

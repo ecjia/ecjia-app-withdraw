@@ -113,6 +113,23 @@ abstract class WithdrawAbstract extends AbstractPlugin
     }
 
     /**
+     * 获取用户绑定提现方式
+     * @param $user_id
+     * @param string $user_type
+     */
+    public function getUserBankcard($user_id, $user_type = 'user')
+    {
+
+
+    }
+
+    /**
+     * 获取用户绑定的提现方式
+     * @return mixed
+     */
+    abstract public function getBankType();
+
+    /**
      * 转帐操作方法
      * @return mixed
      */
