@@ -70,7 +70,7 @@ class withdraw_bankcard_bind_module extends api_front implements api_interface {
     	$bank_branch_name 	= $this->requestData('bank_branch_name', '');//开户行 
     	
     	if (empty($smscode)) {
-    	    return new ecjia_error( 'invalid_parameter', RC_Lang::get ('system::system.invalid_parameter' ));
+    	    return new ecjia_error( 'invalid_parameter', '调用接口withdraw_bankcard_bind_module参数无效！');
     	}
     	//判断校验码是否过期
     	if ($_SESSION['captcha']['sms']['user_bind_bank']['lifetime'] < RC_Time::gmtime()) {
