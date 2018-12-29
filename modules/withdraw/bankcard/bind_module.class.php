@@ -72,7 +72,7 @@ class withdraw_bankcard_bind_module extends api_front implements api_interface {
     	if (empty($smscode)) {
     	    return new ecjia_error( 'invalid_parameter', RC_Lang::get ('system::system.invalid_parameter' ));
     	}
-    	判断校验码是否过期
+    	//判断校验码是否过期
     	if ($_SESSION['captcha']['sms']['user_bind_bank']['lifetime'] < RC_Time::gmtime()) {
     	    return new ecjia_error('code_timeout', '验证码已过期，请重新获取！');
     	}
