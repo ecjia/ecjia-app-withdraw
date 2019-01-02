@@ -61,4 +61,8 @@ class WithdrawConstant
     const WITHDRAW_RECORD_STATUS_REFUND      = 21; //银行退票
 
 
+    const ORDER_PAY_STATUS_UNPAY          = 0; //未支付
+    const ORDER_PAY_STATUS_PAYED          = 1; //已支付
+    const ORDER_PAY_STATUS_CANCEL         = 2; //已取消
+
 }

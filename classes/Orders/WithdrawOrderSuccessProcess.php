@@ -10,6 +10,8 @@ namespace Ecjia\App\Withdraw\Orders;
 use Ecjia\App\Finance\UserAccountBalance;
 use Ecjia\App\Withdraw\Models\UserAccountModel;
 use Ecjia\App\Withdraw\Exceptions\WithdrawException;
+use Ecjia\App\Withdraw\Repositories\UserAccountRepository;
+use Ecjia\App\Withdraw\WithdrawConstant;
 
 /**
  * Class WithdrawOrderSuccess
@@ -21,20 +23,24 @@ class WithdrawOrderSuccessProcess
 
     protected $user_account;
 
+    protected $repository;
+
     public function __construct($order_sn)
     {
         $this->order = UserAccountModel::where('order_sn', $order_sn)->first();
 
         $this->user_account = new UserAccountBalance($this->order->user_id);
+
+        $this->repository = new UserAccountRepository();
     }
 
     /**
      * 提现处理操作
      */
-    public function process()
+    public function process($admin_note)
     {
         //更新提现订单
-        $this->updateWithdrawOrder();
+        $this->updateWithdrawOrder($admin_note);
         //处理冻结金额
         //更新账户日志
         $this->updateAccountMoney();
@@ -46,9 +52,11 @@ class WithdrawOrderSuccessProcess
     /**
      * 更新提现订单
      */
-    protected function updateWithdrawOrder()
+    protected function updateWithdrawOrder($admin_note)
     {
+        $amount            = $this->order->amount;
 
+        $this->repository->updateUserAccount($this->order->order_sn, $amount, $admin_note, WithdrawConstant::ORDER_PAY_STATUS_PAYED);
     }
 
     /**
