@@ -44,99 +44,21 @@
 //
 //  ---------------------------------------------------------------------------------
 //
+
 namespace Ecjia\App\Withdraw;
 
-use Ecjia\App\Withdraw\Models\WithdrawUserBankModel;
-use Ecjia\System\Plugin\AbstractPlugin;
 
-/**
- * 提现插件抽象类
- * @author royalwang
- */
-abstract class WithdrawAbstract extends AbstractPlugin
+class WithdrawConstant
 {
-    
-    /**
-     * 插件信息
-     * @var \Ecjia\App\Withdraw\WithdrawPlugin
-     */
-    protected $plugin_model;
 
     /**
-     * 设置配置方式
-     * @param \Ecjia\App\Withdraw\WithdrawPlugin $plugin
+     * 流水记录的支付状态
      */
-    public function setPluginModel(WithdrawPlugin $plugin)
-    {
-        $this->plugin_model = $plugin;
+    const WITHDRAW_RECORD_STATUS_WAIT        = 0; //等待支付
+    const WITHDRAW_RECORD_STATUS_PAYED       = 1; //支付完成
+    const WITHDRAW_RECORD_STATUS_PROGRESS    = 2; //支付进行中
+    const WITHDRAW_RECORD_STATUS_FAIL        = 11; //支付失败
+    const WITHDRAW_RECORD_STATUS_REFUND      = 21; //银行退票
 
-        return $this;
-    }
 
-    /**
-     * 获取支付方式数据对象
-     * @return \Ecjia\App\Withdraw\WithdrawPlugin $plugin
-     */
-    public function getPluginModel()
-    {
-        return $this->plugin_model;
-    }
-    
-    /**
-     * 获取支付插件的ID
-     * @return integer
-     */
-    public function getId()
-    {
-        return $this->plugin_model->withdraw_id;
-    }
-    
-    /**
-     * 获取支付插件的名称
-     * @return string
-     */
-    public function getName()
-    {
-        return strip_tags($this->plugin_model->withdraw_name);
-    }
-    
-    /**
-     * 获取支付方式显示名称
-     * @return string
-     */
-    public function getDisplayName()
-    {
-        if (array_get($this->config, 'display_name')) {
-            return array_get($this->config, 'display_name');
-        }
-        
-        return $this->getName();
-    }
-
-    /**
-     * 获取用户绑定提现方式
-     * @param $user_id
-     * @param string $user_type
-     */
-    public function getUserBankcard($user_id, $user_type = 'user')
-    {
-        return WithdrawUserBankModel::where('user_id', $user_id)
-            ->where('user_type', $user_type)
-            ->where('bank_type', $this->getBankType())
-            ->get();
-    }
-
-    /**
-     * 获取用户绑定的提现方式
-     * @return mixed
-     */
-    abstract public function getBankType();
-
-    /**
-     * 转帐操作方法
-     * @return mixed
-     */
-    abstract public function transfers($order_sn);
 }
-
-// end
