@@ -23,6 +23,11 @@ class WithdrawBankType
     }
 
 
+    public function getPlugins()
+    {
+        return $this->plugins;
+    }
+
     public function getDisplayBankType()
     {
         $support_bank = false;
