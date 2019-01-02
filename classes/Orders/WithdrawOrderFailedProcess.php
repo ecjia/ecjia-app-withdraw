@@ -20,11 +20,11 @@ class WithdrawOrderFailedProcess extends WithdrawOrderSuccessProcess
     /**
      * 更新提现订单
      */
-    protected function updateWithdrawOrder($admin_note)
+    protected function updateWithdrawOrder($admin_user, $admin_note)
     {
         $amount            = $this->order->amount;
 
-        $this->repository->updateUserAccount($this->order->order_sn, $amount, $admin_note, WithdrawConstant::ORDER_PAY_STATUS_CANCEL);
+        $this->repository->updateCancelOrderUserAccount($this->order->order_sn, $admin_user, $admin_note);
     }
 
     /**

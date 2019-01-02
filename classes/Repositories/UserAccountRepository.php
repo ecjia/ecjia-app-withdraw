@@ -8,6 +8,7 @@
 
 namespace Ecjia\App\Withdraw\Repositories;
 
+use Ecjia\App\Withdraw\WithdrawConstant;
 use Royalcms\Component\Repository\Repositories\AbstractRepository;
 use RC_Time;
 
@@ -67,18 +68,40 @@ class UserAccountRepository extends AbstractRepository
      * @param   string     $id          帐目ID
      * @param   string     $admin_note  管理员描述
      * @param   float     $amount      操作的金额
-     * @param   int     $is_paid     是否已完成
      *
      * @return  int
      */
-    public function updateUserAccount($order_sn, $amount, $admin_note, $is_paid)
+    public function updatePaidOrderUserAccount($order_sn, $amount, $admin_name, $admin_note)
     {
         $data = array(
-            'admin_user'	=> $_SESSION['admin_name'],
+            'admin_user'	=> $admin_name,
             'amount'		=> $amount,
             'paid_time'		=> RC_Time::gmtime(),
             'admin_note'	=> $admin_note,
-            'is_paid'		=> $is_paid,
+            'is_paid'		=> WithdrawConstant::ORDER_PAY_STATUS_PAYED,
+            'review_time'   => RC_Time::gmtime(),
+        );
+        return $this->getModel()->where('order_sn', $order_sn)
+            ->where('process_type', $this->process_type)
+            ->update($data);
+    }
+
+
+    /**
+     * 更新会员提现订单
+     *
+     * @param   string     $id          帐目ID
+     * @param   string     $admin_note  管理员描述
+     * @param   float     $amount      操作的金额
+     *
+     * @return  int
+     */
+    public function updateCancelOrderUserAccount($order_sn, $admin_name, $admin_note)
+    {
+        $data = array(
+            'admin_user'	=> $admin_name,
+            'admin_note'	=> $admin_note,
+            'is_paid'		=> WithdrawConstant::ORDER_PAY_STATUS_CANCEL,
             'review_time'   => RC_Time::gmtime(),
         );
         return $this->getModel()->where('order_sn', $order_sn)

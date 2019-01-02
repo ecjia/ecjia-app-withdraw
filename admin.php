@@ -328,12 +328,7 @@ class admin extends ecjia_admin
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
 
         /* 查询当前的预付款信息 */
-        $account           = array();
-        $account           = RC_DB::table('user_account')->where('id', $id)->first();
-        $amount            = $account['amount'];
-        $frozen_money      = $account['amount'];
-        $user_frozen_money = user_account::get_frozen_money($account['user_id']);
-
+        $account           = RC_DB::table('user_account')->where('id', $id)->where('process_type', 1)->first();
         //到款状态不能再次修改
         if (!empty($account['is_paid'])) {
             return $this->showmessage('该订单已审核，请勿重复操作', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
@@ -341,41 +336,31 @@ class admin extends ecjia_admin
 
         /* 同意,更新此条记录,扣除相应的余额 */
         if ($is_paid == 1) {
-            if ($account['process_type'] == 1) {
-                $fmt_amount = str_replace('-', '', $amount);
 
-                /* 如果扣除的余额多于此会员的总冻结金额，提示 */
-                if ($fmt_amount > $user_frozen_money) {
-                    return $this->showmessage(RC_Lang::get('user::user_account.surplus_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-                }
-
-                update_user_account($id, $amount, $admin_note, 1);
-
-                //解冻提现时冻结的冻结金额
-                user_account::change_frozen_money($account['user_id'], $frozen_money);
-            } else {
-                /* 如果是预付款，并且已完成, 更新此条记录，增加相应的余额 */
-                update_user_account($id, $amount, $admin_note, 1);
-
-                /* 更新会员余额数量 */
-                change_account_log($account['user_id'], $amount, 0, 0, 0, RC_Lang::get('user::user_account.surplus_type.0'), ACT_SAVING);
-            }
-            //取消
-        } else {
-            /* 否则更新信息 */
-            $data = array(
-                'admin_user'  => $_SESSION['admin_name'],
-                'admin_note'  => $admin_note,
-                'is_paid'     => $is_paid,
-                'review_time' => RC_Time::gmtime()
-            );
-            //如果是提现且取消；解冻提现时冻结的冻结金额；返还余额
-            if ($is_paid == 2 && $account['process_type'] == 1) {
-                user_account::change_frozen_money($account['user_id'], $frozen_money); //冻结金额解冻
-                user_account::change_user_money($account['user_id'], abs($account['amount'])); //返还余额
+            $amount            = $account['amount'];
+            $user_frozen_money = user_account::get_frozen_money($account['user_id']);
+            $fmt_amount = abs($amount);
+            /* 如果扣除的余额多于此会员的总冻结金额，提示 */
+            if ($fmt_amount > $user_frozen_money) {
+                return $this->showmessage('要提现的金额超过了此会员的帐户余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
             }
 
-            RC_DB::table('user_account')->where('id', $id)->update($data);
+            $result = (new \Ecjia\App\Withdraw\Transfers\TransferManager($account['order_sn']))->transfer();
+
+            if (is_ecjia_error($result)) {
+                //返回错误信息到页面上
+                //@todo
+            }
+
+            (new \Ecjia\App\Withdraw\Orders\WithdrawOrderSuccessProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
+
+        }
+
+        //取消提现后，返还用户资金
+        else {
+
+            (new \Ecjia\App\Withdraw\Orders\WithdrawOrderFailedProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
+
         }
 
         ecjia_admin::admin_log('(' . addslashes(RC_Lang::get('user::user_account.check')) . ')' . $admin_note, 'check', 'user_surplus');
