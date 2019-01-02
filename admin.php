@@ -127,30 +127,36 @@ class admin extends ecjia_admin
         $this->assign('ur_here', '线下提现申请');
         $this->assign('action_link', array('href' => RC_Uri::url('withdraw/admin/init'), 'text' => RC_Lang::get('user::user_account.withdraw_apply')));
 
-        $payment     = get_payment();
-        $has_payment = $has_pay_bank = $has_pay_wxpay = false;
+        $withdraw_bank = new \Ecjia\App\Withdraw\WithdrawBankType();
+        $plugins       = $withdraw_bank->getPlugins();
 
-        if (!empty($payment)) {
-            foreach ($payment as $k => $v) {
-                if (in_array($v['pay_code'], array('pay_wxpay', 'pay_bank'))) {
-                    $has_payment = true;
-                    if ($v['pay_code'] == 'pay_bank') {
-                        $has_pay_bank = true;
-                    }
-                    if ($v['pay_code'] == 'pay_bank') {
-                        $has_pay_wxpay = true;
-                    }
-                }
-            }
-        }
-        $this->assign('has_payment', $has_payment);
-        $this->assign('has_pay_bank', $has_pay_bank);
-        $this->assign('has_pay_wxpay', $has_pay_wxpay);
+//        dd($plugins->toArray(),1);
+//
+//        $payment     = get_payment();
+//        $has_payment = $has_pay_bank = $has_pay_wxpay = false;
 
-        if (!$has_pay_bank) {
-            $warning = __('您还没有安装银行转账插件，请去插件中心安装。');
+//        if (!empty($payment)) {
+//            foreach ($payment as $k => $v) {
+//                if (in_array($v['pay_code'], array('pay_wxpay', 'pay_bank'))) {
+//                    $has_payment = true;
+//                    if ($v['pay_code'] == 'pay_bank') {
+//                        $has_pay_bank = true;
+//                    }
+//                    if ($v['pay_code'] == 'pay_bank') {
+//                        $has_pay_wxpay = true;
+//                    }
+//                }
+//            }
+//        }
+//        $this->assign('has_payment', $has_payment);
+//        $this->assign('has_pay_bank', $has_pay_bank);
+//        $this->assign('has_pay_wxpay', $has_pay_wxpay);
+
+        if (empty($plugins)) {
+            $warning = __('您还没有安装银行转账插件，请去插件中心安装。' . sprintf("<a target='_blank' href='%s'>点击去安装</a>", RC_Uri::url('@admin_plugin/init', array('usepluginsnum' => 2))));
             ecjia_screen::get_current_screen()->add_admin_notice(new admin_notice($warning));
         }
+        $this->assign('plugins', $plugins->toArray());
 
         $this->assign('form_action', RC_Uri::url('withdraw/admin/insert'));
 
@@ -213,11 +219,7 @@ class admin extends ecjia_admin
             return $this->showmessage('您要申请提现的金额超过了您现有的余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        $is_paid = 0;
-        if ($payment == 'pay_bank') {
-            $is_paid = 1;
-        }
-
+        $is_paid  = 0;
         $order_sn = ecjia_order_deposit_sn();
 
         $data = array(
@@ -237,9 +239,9 @@ class admin extends ecjia_admin
             'from_value'   => $user_info['user_id'],
         );
 
-        if ($is_paid == 1) {
-            $data['paid_time'] = RC_Time::gmtime();
-        }
+//        if ($is_paid == 1) {
+//            $data['paid_time'] = RC_Time::gmtime();
+//        }
         $account_id = RC_DB::table('user_account')->insertGetId($data);
 
         if (empty($account_id)) {
@@ -306,6 +308,8 @@ class admin extends ecjia_admin
             $info['amount'] = abs($info['amount']);
         }
 
+        $user_name = RC_DB::table('users')->where('user_id', $info['user_id'])->pluck('user_name');
+
         ecjia_admin::admin_log(RC_Lang::get('user::user_account.log_username') . $user_name . ',' . $account . $info['amount'], 'edit', 'withdraw_apply');
 
         $links[0]['text'] = RC_Lang::get('user::user_account.back_withdraw_list');
@@ -328,7 +332,7 @@ class admin extends ecjia_admin
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
 
         /* 查询当前的预付款信息 */
-        $account           = RC_DB::table('user_account')->where('id', $id)->where('process_type', 1)->first();
+        $account = RC_DB::table('user_account')->where('id', $id)->where('process_type', 1)->first();
         //到款状态不能再次修改
         if (!empty($account['is_paid'])) {
             return $this->showmessage('该订单已审核，请勿重复操作', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
@@ -339,7 +343,7 @@ class admin extends ecjia_admin
 
             $amount            = $account['amount'];
             $user_frozen_money = user_account::get_frozen_money($account['user_id']);
-            $fmt_amount = abs($amount);
+            $fmt_amount        = abs($amount);
             /* 如果扣除的余额多于此会员的总冻结金额，提示 */
             if ($fmt_amount > $user_frozen_money) {
                 return $this->showmessage('要提现的金额超过了此会员的帐户余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
@@ -349,16 +353,13 @@ class admin extends ecjia_admin
 
             if (is_ecjia_error($result)) {
                 //返回错误信息到页面上
-                //@todo
+                return $this->showmessage($result->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
             }
 
             (new \Ecjia\App\Withdraw\Orders\WithdrawOrderSuccessProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
 
-        }
-
-        //取消提现后，返还用户资金
-        else {
-
+        } else {
+            //取消提现后，返还用户资金
             (new \Ecjia\App\Withdraw\Orders\WithdrawOrderFailedProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
 
         }
@@ -388,9 +389,10 @@ class admin extends ecjia_admin
 
         $userinfo = RC_DB::table('users')->where('user_id', $user_account_info['user_id'])->first();
         $name     = $userinfo['user_name'];
+
         //提现申请记录删除；且到款状态是未确认时；解冻提现申请时冻结的资金
-        if ($user_account_info['process_type'] == '1') {
-            if ($user_account_info['is_paid'] == '0') {
+        if ($user_account_info['process_type'] == 1) {
+            if (empty($user_account_info['is_paid'])) {
                 $frozen_money = $user_account_info['amount'];
                 $user_money   = abs($user_account_info['amount']);
 
@@ -424,8 +426,9 @@ class admin extends ecjia_admin
                 foreach ($data as $v) {
                     if ($v['process_type'] == 1) {
                         $amount = (-1) * $v['amount'];
+
                         //提现且状态为未确认的；返还余额；解冻冻结金额
-                        if ($v['is_paid'] == '0') {
+                        if (empty($v['is_paid'])) {
                             $frozen_money = $v['amount'];
                             $user_money   = abs($v['amount']);
                             user_account::change_user_money($v['user_id'], $user_money); //返还余额
@@ -462,8 +465,15 @@ class admin extends ecjia_admin
 
         $account_info              = RC_DB::table('user_account')->where('id', $id)->first();
         $account_info['user_name'] = RC_DB::table('users')->where('user_id', $account_info['user_id'])->pluck('user_name');
-        $account_info['pay_name']  = RC_DB::table('payment')->where('pay_code', $account_info['payment'])->pluck('pay_name');
-        $apply_amount              = $account_info['apply_amount'] != 0 ? $account_info['apply_amount'] : abs($account_info['amount']);
+
+        $withdraw_bank = new \Ecjia\App\Withdraw\WithdrawBankType();
+        $plugins       = $withdraw_bank->getPlugins();
+
+        $model = $plugins->where('withdraw_code', 'withdraw_wxpay')->first();
+
+        $account_info['withdraw_name'] = $model->withdraw_name;
+
+        $apply_amount = $account_info['apply_amount'] != 0 ? $account_info['apply_amount'] : abs($account_info['amount']);
 
         $account_info['formated_apply_amount'] = ecjia_price_format($apply_amount, false);
         $account_info['formated_pay_fee']      = ecjia_price_format($account_info['pay_fee'], false);
@@ -486,22 +496,6 @@ class admin extends ecjia_admin
 
         $this->assign('check_action', RC_Uri::url('withdraw/admin/action'));
         $this->assign('form_action', RC_Uri::url('withdraw/admin/update'));
-
-        if ($account_info['payment'] == 'pay_wxpay') {
-            $connect_info = RC_DB::table('connect_user')->where('connect_code', 'sns_wechat')->where('user_id', $account_info['user_id'])->first();
-
-            if (!empty($connect_info)) {
-                $ect_uid = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->pluck('ect_uid');
-                //修正绑定信息
-                if (empty($ect_uid)) {
-                    RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->update(array('ect_uid' => $connect_info['user_id']));
-                }
-                $wechat_info = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->where('ect_uid', $connect_info['user_id'])->first();
-                if (!empty($wechat_info)) {
-                    $account_info['wechat_nickname'] = $wechat_info['nickname'];
-                }
-            }
-        }
 
         $this->assign('account_info', $account_info);
         $this->assign('order_sn', $order_sn);
@@ -571,6 +565,34 @@ class admin extends ecjia_admin
                 }
             });
         })->download('xls');
+    }
+
+    public function get_user_bank()
+    {
+        $code    = trim($_POST['code']);
+        $user_id = intval($_POST['user_id']);
+
+        $withdraw_plugin = new \Ecjia\App\Withdraw\WithdrawPlugin();
+
+        $plugin = $withdraw_plugin->channel($code);
+
+        if (is_ecjia_error($plugin)) {
+            return $this->showmessage($plugin->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
+        $user_bank_card = $plugin->getUserBankcard($user_id)->first();
+
+        if (empty($user_bank_card)) {
+            return $this->showmessage('没有绑定提现账户信息', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
+        $user_bank_card = $user_bank_card->toArray();
+
+        $this->assign('user_bank_card', $user_bank_card);
+
+        $content = $this->fetch('library/user_bank_card.lbi');
+
+        return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('content' => $content));
     }
 
     /**
@@ -654,7 +676,9 @@ class admin extends ecjia_admin
                 $apply_amount               = abs($value['amount']);
                 $list[$key]['apply_amount'] = ecjia_price_format($apply_amount);
                 $list[$key]['add_date']     = RC_Time::local_date(ecjia::config('time_format'), $value['add_time']);
-                $list[$key]['payment']      = empty($pay_name[$value['payment']]) ? '银行转账' : strip_tags($pay_name[$value['payment']]);
+
+//                $list[$key]['payment']      = empty($pay_name[$value['payment']]) ? '银行转账' : strip_tags($pay_name[$value['payment']]);
+
 
                 $list[$key]['pay_fee']          = $value['pay_fee'];
                 $list[$key]['formated_pay_fee'] = ecjia_price_format($value['pay_fee']);
