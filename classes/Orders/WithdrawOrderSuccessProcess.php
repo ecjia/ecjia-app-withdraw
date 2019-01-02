@@ -5,12 +5,15 @@
  * Date: 2019/1/2
  * Time: 14:13
  */
+
 namespace Ecjia\App\Withdraw\Orders;
 
 use Ecjia\App\Finance\UserAccountBalance;
 use Ecjia\App\Withdraw\Models\UserAccountModel;
 use Ecjia\App\Withdraw\Exceptions\WithdrawException;
 use Ecjia\App\Withdraw\Repositories\UserAccountRepository;
+use RC_Api;
+use ecjia;
 
 /**
  * Class WithdrawOrderSuccess
@@ -53,7 +56,7 @@ class WithdrawOrderSuccessProcess
      */
     protected function updateWithdrawOrder($admin_user, $admin_note)
     {
-        $amount            = $this->order->amount;
+        $amount = $this->order->amount;
 
         $this->repository->updatePaidOrderUserAccount($this->order->order_sn, $amount, $admin_user, $admin_note);
     }
@@ -63,7 +66,7 @@ class WithdrawOrderSuccessProcess
      */
     protected function updateAccountMoney()
     {
-        $amount            = $this->order->amount;
+        $amount = $this->order->amount;
 
         $this->user_account->withdrawSuccessful($amount);
     }
@@ -73,7 +76,21 @@ class WithdrawOrderSuccessProcess
      */
     protected function sendSmsMessageNotice()
     {
+        $order_info   = $this->order;
+        $user_account = $this->user_account;
+        $user_info    = RC_DB::table('users')->where('user_id', $this->order->user_id)->first();
 
+        $options  = array(
+            'mobile' => $user_info['mobile_phone'],
+            'event'  => 'sms_withdraw_success',
+            'value'  => array(
+                'user_name'     => $user_info['user_name'],
+                'amount'        => abs($order_info['amount']),
+                'user_money'    => $user_account->getUserMoney(),
+                'service_phone' => ecjia::config('service_phone')
+            )
+        );
+        $response = RC_Api::api('sms', 'send_event_sms', $options);
     }
 
 }
