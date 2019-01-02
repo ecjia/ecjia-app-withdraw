@@ -69,6 +69,7 @@
 								{else}
 									{lang key='user::user_account.anonymous_member'}
 								{/if}
+                                <a href="{RC_Uri::url('finance/admin_account_log/init')}&account_type=user_money&user_id={$account_info.user_id}" target="_blank"> [ 查看余额变动 ] </a>
 							</td>
 							<td><div align="right"><strong>申请金额：</strong></div></td>
 							<td>{$account_info.formated_apply_amount}</td>				
