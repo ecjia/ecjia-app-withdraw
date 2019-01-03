@@ -85,11 +85,7 @@
 						<tr>
 							<td><div align="right"><strong>提现方式：</strong></div></td>
 							<td>
-                                <!-- {if $account_info.payment eq 'pay_bank'} -->
-                                {if $account_info.bank_name}{$account_info.bank_name}{else}银行转账{/if}
-                                <!-- {else} -->
-                                {if $account_info.pay_name}{$account_info.pay_name}{else}银行转账{/if}
-                                <!-- {/if} -->
+                                {if $account_info.withdraw_name}{$account_info.withdraw_name}{else}银行转账提现{/if}
                             </td>
 							<td><div align="right"><strong>提现账户：</strong></div></td>
 							<td>
@@ -128,7 +124,7 @@
 				</div>
 			</div>
 			<div class="accordion-body in collapse" id="telescopic2">
-				<form class="form-horizontal" method="post" action="{if $account_info.is_paid neq 1}{$check_action}{else}{$form_action}{/if}" name="theForm">
+				<form class="form-horizontal" method="post" action="{$form_action}" name="theForm">
 					<table class="table table-oddtd m_b0">
 						<tbody class="first-td-no-leftbd">
 							<tr>
