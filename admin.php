@@ -130,28 +130,6 @@ class admin extends ecjia_admin
         $withdraw_bank = new \Ecjia\App\Withdraw\WithdrawBankType();
         $plugins       = $withdraw_bank->getPlugins();
 
-//        dd($plugins->toArray(),1);
-//
-//        $payment     = get_payment();
-//        $has_payment = $has_pay_bank = $has_pay_wxpay = false;
-
-//        if (!empty($payment)) {
-//            foreach ($payment as $k => $v) {
-//                if (in_array($v['pay_code'], array('pay_wxpay', 'pay_bank'))) {
-//                    $has_payment = true;
-//                    if ($v['pay_code'] == 'pay_bank') {
-//                        $has_pay_bank = true;
-//                    }
-//                    if ($v['pay_code'] == 'pay_bank') {
-//                        $has_pay_wxpay = true;
-//                    }
-//                }
-//            }
-//        }
-//        $this->assign('has_payment', $has_payment);
-//        $this->assign('has_pay_bank', $has_pay_bank);
-//        $this->assign('has_pay_wxpay', $has_pay_wxpay);
-
         if (empty($plugins)) {
             $warning = __('您还没有安装银行转账插件，请去插件中心安装。' . sprintf("<a target='_blank' href='%s'>点击去安装</a>", RC_Uri::url('@admin_plugin/init', array('usepluginsnum' => 2))));
             ecjia_screen::get_current_screen()->add_admin_notice(new admin_notice($warning));
@@ -245,7 +223,9 @@ class admin extends ecjia_admin
             ]
         ];
 
-        return $this->showmessage(RC_Lang::get('user::user_account.add_success'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => RC_Uri::url('withdraw/admin/init')));
+        $pjaxurl = RC_Uri::url('withdraw/admin/init');
+
+        return $this->showmessage(RC_Lang::get('user::user_account.add_success'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => $pjaxurl));
     }
 
     /**
@@ -331,7 +311,6 @@ class admin extends ecjia_admin
 
         /* 同意,更新此条记录,扣除相应的余额 */
         if ($is_paid == 1) {
-
             $amount            = $account['amount'];
             $user_frozen_money = user_account::get_frozen_money($account['user_id']);
             $fmt_amount        = abs($amount);
@@ -352,7 +331,6 @@ class admin extends ecjia_admin
         } else {
             //取消提现后，返还用户资金
             (new \Ecjia\App\Withdraw\Orders\WithdrawOrderFailedProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
-
         }
 
         ecjia_admin::admin_log('(' . addslashes(RC_Lang::get('user::user_account.check')) . ')' . $admin_note, 'check', 'user_surplus');
@@ -360,7 +338,9 @@ class admin extends ecjia_admin
         $links[0]['text'] = RC_Lang::get('user::user_account.back_withdraw_list');
         $links[0]['href'] = RC_Uri::url('withdraw/admin/init');
 
-        return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => RC_Uri::url('withdraw/admin/check', array('id' => $id))));
+        $pjaxurl = RC_Uri::url('withdraw/admin/check', array('id' => $id));
+
+        return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => $pjaxurl));
     }
 
     /**
@@ -466,7 +446,13 @@ class admin extends ecjia_admin
                 }
             }
 
-            $result = array('status' => 1, 'username' => $user_info['user_name'], 'user_money' => $user_info['formated_user_money'], 'wechat_nickname' => $wechat_nickname, 'user_id' => $user_info['user_id']);
+            $result = array(
+                'status'          => 1,
+                'username'        => $user_info['user_name'],
+                'user_money'      => $user_info['formated_user_money'],
+                'wechat_nickname' => $wechat_nickname,
+                'user_id'         => $user_info['user_id']
+            );
             return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, $result);
         }
     }
@@ -567,6 +553,7 @@ class admin extends ecjia_admin
             $db_user_account->where('add_time', '<', $end_date);
         }
 
+        $type_count = [];
         if ($return_all) {
             $list = $db_user_account
                 ->where(RC_DB::raw('ua.is_paid'), 0)
@@ -642,7 +629,6 @@ class admin extends ecjia_admin
                 $arr[$key]['status']           = $list[$key]['is_paid'] == 1 ? '已完成' : ($list[$key]['is_paid'] == 0 ? '待审核' : '已取消');
             }
         }
-
 
         if ($return_all) {
             return $arr;
