@@ -182,6 +182,9 @@ class admin extends ecjia_admin
         $admin_note   = !empty($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
         $payment      = trim($_POST['payment']);
 
+        //银行信息
+        $bank_card        = trim($_POST['bank_card']);
+
         /* 验证参数有效性  */
         if (!is_numeric($apply_amount) || empty($apply_amount) || $apply_amount <= 0) {
             return $this->showmessage(RC_Lang::get('user::user_account.js_languages.deposit_amount_error'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
@@ -205,6 +208,19 @@ class admin extends ecjia_admin
             return $this->showmessage('您要申请提现的金额超过了您现有的余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
+        $withdraw_plugin = new \Ecjia\App\Withdraw\WithdrawPlugin();
+        $plugin = $withdraw_plugin->channel($payment);
+        if (is_ecjia_error($plugin)) {
+            return $this->showmessage($plugin->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
+        $user_bank_card = $plugin->getUserBankcard($user_id)->where('bank_card', $bank_card)->first();
+        if (empty($user_bank_card)) {
+            return $this->showmessage('没有绑定提现账户信息', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
+        $user_bank_card = $user_bank_card->toArray();
+
         $UserAccountRepository = new Ecjia\App\Withdraw\Repositories\UserAccountRepository();
 
         $order_sn = ecjia_order_deposit_sn();
@@ -217,11 +233,11 @@ class admin extends ecjia_admin
             'payment'           => $payment,
             'from_type'         => 'admim',
             'from_value'        => $user_info['user_id'],
-            'bank_name'         => '',
-            'bank_branch_name'  => '',
-            'bank_card'         => '',
-            'cardholder'        => '',
-            'bank_en_short'     => '',
+            'bank_name'         => $user_bank_card['bank_name'],
+            'bank_branch_name'  => $user_bank_card['bank_branch_name'],
+            'bank_card'         => $user_bank_card['bank_card'],
+            'cardholder'        => $user_bank_card['cardholder'],
+            'bank_en_short'     => $user_bank_card['bank_en_short'],
         );
 
         $model = $UserAccountRepository->insertUserAccount($data, $apply_amount);
