@@ -10,6 +10,7 @@ namespace Ecjia\App\Withdraw\Orders;
 
 use RC_Api;
 use RC_DB;
+use ecjia;
 
 /**
  * Class WithdrawOrderFailed
