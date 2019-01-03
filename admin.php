@@ -319,7 +319,7 @@ class admin extends ecjia_admin
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
 
         /* 查询当前的预付款信息 */
-        $account = RC_DB::table('user_account')->where('id', $id)->where('process_type', 1)->first();
+        $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
         //到款状态不能再次修改
         if (!empty($account['is_paid'])) {
             return $this->showmessage('该订单已审核，请勿重复操作', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
@@ -334,6 +334,14 @@ class admin extends ecjia_admin
             if ($fmt_amount > $user_frozen_money) {
                 return $this->showmessage('要提现的金额超过了此会员的帐户余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
             }
+
+            $WithdrawRecordRepository = new \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository();
+            $WithdrawRecordRepository->createWithdrawRecord([
+                'order_sn' => $account['order_sn'],
+                'withdraw_code' => $account['payment'],
+                'withdraw_name' => '',
+                'withdraw_amount' => $account['real_amount'],
+            ]);
 
             $result = (new \Ecjia\App\Withdraw\Transfers\TransferManager($account['order_sn']))->transfer();
 
@@ -351,8 +359,12 @@ class admin extends ecjia_admin
 
         ecjia_admin::admin_log('(' . addslashes(RC_Lang::get('user::user_account.check')) . ')' . $admin_note, 'check', 'user_surplus');
 
-        $links[0]['text'] = RC_Lang::get('user::user_account.back_withdraw_list');
-        $links[0]['href'] = RC_Uri::url('withdraw/admin/init');
+        $links = [
+            [
+                'text' => RC_Lang::get('user::user_account.back_withdraw_list'),
+                'href' => RC_Uri::url('withdraw/admin/init'),
+            ]
+        ];
 
         $pjaxurl = RC_Uri::url('withdraw/admin/check', array('id' => $id));
 
