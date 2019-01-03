@@ -69,10 +69,10 @@
                         }
 
                         if (data.status == 1) {
-                            //@todo 关闭选中
-                            // $('input[name="payment"]').each(function(){
-                            //     $(this).removeAttr('checked');
-                            // });
+                            //移除已经选中的提现方式
+                            $('input[name="payment"]').each(function(){
+                                $(this).prop('checked', false).parent().removeClass('uni-checked');
+                            });
                             $(".control-group-user").removeClass("hide");
                             $(".control-group-user").find('.userinfo').html(data.username);
                             $(".control-group-user").find('.user_money').html(data.user_money);
