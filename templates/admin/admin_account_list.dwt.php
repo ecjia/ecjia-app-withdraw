@@ -111,7 +111,7 @@
 					<td align="right">{$item.apply_amount}</td>
 					<td align="center">{$item.formated_pay_fee}</td>
 					<td align="center">{$item.formated_amount}</td>
-					<td>{if $item.withdraw_name}{$item.withdraw_name}{else}银行转账提现{/if}</td>
+					<td>{if $item.payment_name}{$item.payment_name}{else}银行转账提现{/if}</td>
 					<td align="center">{$item.add_date}</td>
 					<td align="center">{if $item.is_paid eq 1}{lang key='user::user_account.confirm'}{elseif $item.is_paid eq 0}{lang
 						key='user::user_account.wait_check'}{else}{lang key='user::user_account.canceled'}{/if}</td>

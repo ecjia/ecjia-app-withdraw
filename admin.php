@@ -161,7 +161,7 @@ class admin extends ecjia_admin
         $payment      = trim($_POST['payment']);
 
         //银行信息
-        $bank_card        = trim($_POST['bank_card']);
+        $bank_card = trim($_POST['bank_card']);
 
         /* 验证参数有效性  */
         if (!is_numeric($apply_amount) || empty($apply_amount) || $apply_amount <= 0) {
@@ -187,7 +187,7 @@ class admin extends ecjia_admin
         }
 
         $withdraw_plugin = new \Ecjia\App\Withdraw\WithdrawPlugin();
-        $plugin = $withdraw_plugin->channel($payment);
+        $plugin          = $withdraw_plugin->channel($payment);
         if (is_ecjia_error($plugin)) {
             return $this->showmessage($plugin->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
@@ -204,18 +204,20 @@ class admin extends ecjia_admin
         $order_sn = ecjia_order_deposit_sn();
 
         $data = array(
-            'user_id'           => $user_info['user_id'],
-            'order_sn'          => $order_sn,
-            'admin_user'        => $_SESSION['admin_name'],
-            'admin_note'        => $admin_note,
-            'payment'           => $payment,
-            'from_type'         => 'admim',
-            'from_value'        => $user_info['user_id'],
-            'bank_name'         => $user_bank_card['bank_name'],
-            'bank_branch_name'  => $user_bank_card['bank_branch_name'],
-            'bank_card'         => $user_bank_card['bank_card'],
-            'cardholder'        => $user_bank_card['cardholder'],
-            'bank_en_short'     => $user_bank_card['bank_en_short'],
+            'user_id'          => $user_info['user_id'],
+            'order_sn'         => $order_sn,
+            'admin_user'       => $_SESSION['admin_name'],
+            'admin_note'       => $admin_note,
+            'payment'          => $payment,
+            'payment_name'     => $plugin->getName(),
+            'from_type'        => 'admim',
+            'from_value'       => $user_info['user_id'],
+            'bank_name'        => $user_bank_card['bank_name'],
+            'bank_branch_name' => $user_bank_card['bank_branch_name'],
+            'bank_card'        => $user_bank_card['bank_card'],
+            'cardholder'       => $user_bank_card['cardholder'],
+            'bank_en_short'    => $user_bank_card['bank_en_short'],
+            'user_note'        => ''
         );
 
         $model = $UserAccountRepository->insertUserAccount($data, $apply_amount);
@@ -263,17 +265,6 @@ class admin extends ecjia_admin
 
         $account_info              = RC_DB::table('user_account')->where('id', $id)->first();
         $account_info['user_name'] = RC_DB::table('users')->where('user_id', $account_info['user_id'])->pluck('user_name');
-
-        $withdraw_bank = new \Ecjia\App\Withdraw\WithdrawBankType();
-        $plugins       = $withdraw_bank->getPlugins();
-
-        if (empty($account_info['payment']) || strpos($account_info['payment'], 'pay_') !== false) {
-            $account_info['payment'] = 'withdraw_bank';
-        }
-
-        $model = $plugins->where('withdraw_code', $account_info['payment'])->first();
-
-        $account_info['withdraw_name'] = $model->withdraw_name;
 
         $apply_amount = $account_info['apply_amount'] != 0 ? $account_info['apply_amount'] : abs($account_info['amount']);
 
@@ -337,9 +328,9 @@ class admin extends ecjia_admin
 
             $WithdrawRecordRepository = new \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository();
             $WithdrawRecordRepository->createWithdrawRecord([
-                'order_sn' => $account['order_sn'],
-                'withdraw_code' => $account['payment'],
-                'withdraw_name' => $account['payment_name'],
+                'order_sn'        => $account['order_sn'],
+                'withdraw_code'   => $account['payment'],
+                'withdraw_name'   => $account['payment_name'],
                 'withdraw_amount' => $account['real_amount'],
             ]);
 
@@ -630,17 +621,10 @@ class admin extends ecjia_admin
             $plugins       = $withdraw_bank->getPlugins();
 
             foreach ($list as $key => $value) {
-                $apply_amount               = abs($value['amount']);
-                $list[$key]['apply_amount'] = ecjia_price_format($apply_amount);
-                $list[$key]['add_date']     = RC_Time::local_date(ecjia::config('time_format'), $value['add_time']);
-
-                if (empty($value['payment']) || strpos($value['payment'], 'pay_') !== false) {
-                    $value['payment'] = 'withdraw_bank';
-                }
-                $model = $plugins->where('withdraw_code', $value['payment'])->first();
-
-                $list[$key]['withdraw_name'] = $model->withdraw_name;
-
+                $apply_amount                   = abs($value['amount']);
+                $list[$key]['apply_amount']     = ecjia_price_format($apply_amount);
+                $list[$key]['add_date']         = RC_Time::local_date(ecjia::config('time_format'), $value['add_time']);
+                $list[$key]['payment_name']     = $value['payment_name'];
                 $list[$key]['pay_fee']          = $value['pay_fee'];
                 $list[$key]['formated_pay_fee'] = ecjia_price_format($value['pay_fee']);
 

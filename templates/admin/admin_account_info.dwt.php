@@ -85,7 +85,7 @@
 						<tr>
 							<td><div align="right"><strong>提现方式：</strong></div></td>
 							<td>
-                                {if $account_info.withdraw_name}{$account_info.withdraw_name}{else}银行转账提现{/if}
+                                {if $account_info.payment_name}{$account_info.payment_name}{else}银行转账提现{/if}
                             </td>
 							<td><div align="right"><strong>提现账户：</strong></div></td>
 							<td>

@@ -69,6 +69,7 @@ class UserAccountRepository extends AbstractRepository
             'user_note'		=> $data['user_note'],
             'process_type'	=> $this->process_type,
             'payment'		=> $data['payment'],
+            'payment_name'  => $data['payment_name'],
             'is_paid'		=> WithdrawConstant::WITHDRAW_RECORD_STATUS_WAIT,
             'amount'		=> (-1) * $amount, //申请金额
             'pay_fee'       => $pay_fee, //手续费

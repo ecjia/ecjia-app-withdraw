@@ -89,11 +89,6 @@
 				</div>
 				{/if}
 
-                <div class="control-group formSep">
-                    <label class="control-label">提现手续费：</label>
-                    <div class="controls l_h30 withdraw_pay_fee">￥0.00</div>
-                </div>
-
                 <div class="user_bank_card">
 
                 </div>
