@@ -28,7 +28,8 @@
 <div class="row-fluid edit-page">
 	<div class="span12">
 		<form class="form-horizontal" id="form-privilege" name="theForm" action="{$form_action}" method="post">
-			<fieldset>
+            <div class="span7">
+			    <fieldset>
 				<div class="control-group formSep">
 					<label class="control-label">{lang key='user::user_account.user_mobile'}：</label>
 					<div class="controls">
@@ -116,6 +117,10 @@
 					</div>
 				</div>
 			</fieldset>
+            </div>
+            <div class="span5 withdraw_card_content">
+
+            </div>
 		</form>
 	</div>
 </div>

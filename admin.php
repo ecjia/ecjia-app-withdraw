@@ -472,7 +472,62 @@ class admin extends ecjia_admin
                 'wechat_nickname' => $wechat_nickname,
                 'user_id'         => $user_info['user_id']
             );
-            return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, $result);
+
+            $user_info['avatar_img'] = !empty($user_info['avatar_img']) ? RC_Upload::upload_url($user_info['avatar_img']) : RC_App::apps_url('statics/images/default-avatar-60.png', __FILE__);
+
+            if ($user_info['user_rank'] == 0) {
+                //重新计算会员等级
+                $row_rank = RC_Api::api('user', 'update_user_rank', array('user_id' => $user_info['user_id']));
+            } else {
+                $row_rank = RC_DB::table('user_rank')->where('rank_id', $user_info['user_rank'])->first();
+            }
+
+            $user_binded_list = [];
+            $bank_list        = RC_DB::table('withdraw_user_bank')->where('user_id', $user_info['user_id'])->where('user_type', 'user')->get();
+            if ($bank_list) {
+                foreach ($bank_list as $val) {
+                    $formated_pay_name = $val['bank_name'];
+
+                    if ($val['bank_type'] == 'bank') {
+                        $bank      = Ecjia\App\Setting\BankWithdraw::getBankInfoByEnShort($val['bank_en_short']);
+                        $bank_icon = $bank['bank_icon'];
+
+                        if (!empty($val['bank_name']) && !empty($val['bank_card'])) {
+                            $bank_card_str = substr($val['bank_card'], -4);
+
+                            $formated_pay_name = $val['bank_name'] . ' (' . $bank_card_str . ')';
+                        }
+
+                    } elseif ($val['bank_type'] == 'wechat') {
+                        $bank_icon = RC_App::apps_url('statics/images/wechat.png', __FILE__);
+
+                        if (!empty($val['bank_name']) && !empty($val['cardholder'])) {
+                            $formated_pay_name = $val['bank_name'] . ' (' . $val['cardholder'] . ')';
+                        }
+
+                    }
+
+                    $user_binded_list[] = [
+                        'id'                => intval($val['id']),
+                        'bank_icon'         => $bank_icon,
+                        'formated_pay_name' => $formated_pay_name,
+                    ];
+                }
+            }
+
+            $data = array(
+                'user_id'             => $user_info['user_id'],
+                'avatar_img'          => $user_info['avatar_img'],
+                'user_name'           => $user_info['user_name'],
+                'formated_user_money' => $user_info['formated_user_money'],
+                'rank_name'           => $row_rank['rank_name'],
+                'user_binded_list'    => $user_binded_list,
+                'unbind_icon'         => RC_App::apps_url('statics/images/unbind.png', __FILE__)
+            );
+            $this->assign('data', $data);
+            $content = $this->fetch('library/user_card.lbi');
+
+            return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('result' => $result, 'content' => $content));
         }
     }
 
