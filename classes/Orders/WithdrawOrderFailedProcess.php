@@ -8,9 +8,8 @@
 
 namespace Ecjia\App\Withdraw\Orders;
 
-use \Ecjia\App\Withdraw\Models\UserAccountModel;
-use Ecjia\App\Withdraw\WithdrawConstant;
 use RC_Api;
+use RC_DB;
 
 /**
  * Class WithdrawOrderFailed

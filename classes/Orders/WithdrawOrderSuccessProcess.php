@@ -10,9 +10,9 @@ namespace Ecjia\App\Withdraw\Orders;
 
 use Ecjia\App\Finance\UserAccountBalance;
 use Ecjia\App\Withdraw\Models\UserAccountModel;
-use Ecjia\App\Withdraw\Exceptions\WithdrawException;
 use Ecjia\App\Withdraw\Repositories\UserAccountRepository;
 use RC_Api;
+use RC_DB;
 use ecjia;
 
 /**
