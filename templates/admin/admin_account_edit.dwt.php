@@ -67,7 +67,7 @@
 					<div class="controls">
 						<input class="w350" type="text" name="apply_amount" data-url="{RC_Uri::url('withdraw/admin/check_pay_fee')}" /> 元
 						<span class="input-must">{lang key='system::system.require_field'}</span>
-						<span class="help-block">提现金额不能大于可用余额，最小提现金额不能小于{$withdraw_min_amount}元。</span>
+						<span class="help-block">提现金额不能大于可用余额，管理员操作提现将不受最低提现金额限制。</span>
 					</div>
 				</div>
 

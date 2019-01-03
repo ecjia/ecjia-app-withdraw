@@ -87,8 +87,8 @@
 
 							<!--the tenpay code -->
 							{if $key eq "0"}
-                                {if $smarty.get.code eq "tenpay"}<input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key='withdraw::withdraw.ctenwithdraw_url'}')"/>
-                                {elseif $smarty.get.code eq "tenpayc2c"} <input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key='withdraw::withdraw.ctenpayc2c_url'}')"/>
+                                {if $smarty.get.code eq "tenpay"}<input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key="withdraw::withdraw.ctenwithdraw_url"}')"/>
+                                {elseif $smarty.get.code eq "tenpayc2c"} <input type="button" value="{lang key='withdraw::withdraw.ctenpay'}" onclick="javascript:window.open('{lang key="withdraw::withdraw.ctenpayc2c_url"}')"/>
                                 {/if}
 							{/if}
 							<!--the tenpay code -->
