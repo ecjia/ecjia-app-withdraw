@@ -27,10 +27,9 @@ class WithdrawRecordRepository extends AbstractRepository
      */
     public function createWithdrawRecord(array $data)
     {
-        $model = $this->findRefundOutNo(array_get($data, 'order_sn'));
+        $model = $this->findWithdrawOrderSn(array_get($data, 'order_sn'));
         if (empty($model)) {
             $insertData['order_sn'] = array_get($data, 'order_sn');
-            $insertData['trade_no'] = array_get($data, 'trade_no');
             $insertData['withdraw_code'] = array_get($data, 'withdraw_code');
             $insertData['withdraw_name'] = array_get($data, 'withdraw_name');
             $insertData['withdraw_amount'] = array_get($data, 'withdraw_amount');
@@ -43,24 +42,24 @@ class WithdrawRecordRepository extends AbstractRepository
         return $model;
     }
 
-    /**
-     * 退款成功记录
-     * @param string $refund_out_no 退款商户号
-     * @param string $refund_trade_no 退款流水号
-     * @param array $refund_info 退款信息，序列化存储
-     */
-    public function refundProcessRecord($refund_out_no, $refund_trade_no, array $refund_info)
-    {
-        $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
-        if (!empty($model)) {
-            $model->refund_trade_no = $refund_trade_no;
-            $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_PROGRESS;
-            $model->refund_info = serialize($refund_info);
-            $model->last_error_message = null;
-            $model->last_error_time = null;
-            $model->save();
-        }
-    }
+//    /**
+//     * 退款成功记录
+//     * @param string $refund_out_no 退款商户号
+//     * @param string $refund_trade_no 退款流水号
+//     * @param array $refund_info 退款信息，序列化存储
+//     */
+//    public function refundProcessRecord($refund_out_no, $refund_trade_no, array $refund_info)
+//    {
+//        $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
+//        if (!empty($model)) {
+//            $model->refund_trade_no = $refund_trade_no;
+//            $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_PROGRESS;
+//            $model->refund_info = serialize($refund_info);
+//            $model->last_error_message = null;
+//            $model->last_error_time = null;
+//            $model->save();
+//        }
+//    }
 
     /**
      * 退款成功记录
@@ -68,7 +67,7 @@ class WithdrawRecordRepository extends AbstractRepository
      * @param string $refund_trade_no 退款流水号
      * @param array $refund_info 退款信息，序列化存储
      */
-    public function refundSuccessfulRecord($refund_out_no, $refund_trade_no, array $refund_info)
+    public function withdrawSuccessfulRecord($refund_out_no, $refund_trade_no, array $refund_info)
     {
         $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
         if (!empty($model)) {
@@ -91,7 +90,7 @@ class WithdrawRecordRepository extends AbstractRepository
      * @param string $refund_out_no 退款商户号
      * @param string $error_message
      */
-    public function refundErrorRecord($refund_out_no, $error_message)
+    public function withdrawErrorRecord($refund_out_no, $error_message)
     {
         $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
         if (!empty($model)) {
@@ -108,7 +107,7 @@ class WithdrawRecordRepository extends AbstractRepository
      * @param string $refund_out_no 退款商户号
      * @param string $error_message
      */
-    public function refundFailedRecord($refund_out_no, $refund_trade_no, array $refund_info)
+    public function withdrawFailedRecord($refund_out_no, $refund_trade_no, array $refund_info)
     {
         $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
         if (!empty($model)) {
@@ -131,7 +130,7 @@ class WithdrawRecordRepository extends AbstractRepository
      * @param string $refund_out_no 退款商户号
      * @param string $error_message
      */
-    public function refundClosedRecord($refund_out_no, $refund_trade_no, array $refund_info)
+    public function withdrawClosedRecord($refund_out_no, $refund_trade_no, array $refund_info)
     {
         $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
         if (!empty($model)) {

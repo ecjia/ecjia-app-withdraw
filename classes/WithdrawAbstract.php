@@ -48,6 +48,7 @@ namespace Ecjia\App\Withdraw;
 
 use Ecjia\App\Withdraw\Models\WithdrawUserBankModel;
 use Ecjia\System\Plugin\AbstractPlugin;
+use Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository;
 
 /**
  * 提现插件抽象类
@@ -61,6 +62,33 @@ abstract class WithdrawAbstract extends AbstractPlugin
      * @var \Ecjia\App\Withdraw\WithdrawPlugin
      */
     protected $plugin_model;
+
+    /**
+     * 提现流水记录
+     * @var \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository
+     */
+    protected $withdrawRecordRepository;
+
+    /**
+     * 设置提现流水记录对象
+     * @param WithdrawRecordRepository $withdrawRecord
+     * @return \Ecjia\App\Withdraw\WithdrawAbstract
+     */
+    public function setWithdrawRecordRepository(WithdrawRecordRepository $withdrawRecord)
+    {
+        $this->withdrawRecordRepository = $withdrawRecord;
+
+        return $this;
+    }
+
+    /**
+     * 获取提现流水记录操作对象
+     * @return \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository
+     */
+    public function getWithdrawRecordRepository()
+    {
+        return $this->withdrawRecordRepository;
+    }
 
     /**
      * 设置配置方式

@@ -45,12 +45,11 @@ abstract class WithdrawManagerAbstract
 
         $withdraw_plugin	= new WithdrawPlugin();
         $this->pluginHandler = $withdraw_plugin->channel($this->withdrawCode);
-        if (is_ecjia_error($this->pluginHandler))
-        {
+        if (is_ecjia_error($this->pluginHandler)) {
             return $this->pluginHandler;
         }
 
-        $this->pluginHandler->setWithdrawRecord($this->withdrawRecordRepository);
+        $this->pluginHandler->setWithdrawRecordRepository($this->withdrawRecordRepository);
 
         return $this->doPluginHandler();
     }

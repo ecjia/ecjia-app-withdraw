@@ -27,6 +27,13 @@ class UserAccountRepository extends AbstractRepository
     protected $process_type = 1; //提现类型
 
 
+    public function findWithdraw($id)
+    {
+        return $this->getModel()->where('id', $id)
+            ->where('process_type', $this->process_type)
+            ->first();
+    }
+
     public function getUserAccountOrder($order_sn)
     {
         return $this->getModel()->where('order_sn', $order_sn)
