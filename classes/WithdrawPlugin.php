@@ -262,7 +262,7 @@ class WithdrawPlugin extends PluginModel
         	
         if (!empty($data)) {
             
-            $withdraw_list = $data->mapWithKeys(function ($item) use ($available_plugins) {
+            $withdraw_list = $data->flatMap(function ($item) use ($available_plugins) {
                 if (empty($available_plugins)) {
                     $available_plugins = array_keys($this->getInstalledPlugins());
                 }
@@ -299,7 +299,7 @@ class WithdrawPlugin extends PluginModel
          
         if (!empty($data)) {
         
-            $withdraw_list = $data->mapWithKeys(function ($item) use ($available_plugins) {
+            $withdraw_list = $data->flatMap(function ($item) use ($available_plugins) {
                 if (empty($available_plugins)) {
                     $available_plugins = array_keys($this->getInstalledPlugins());
                 }
