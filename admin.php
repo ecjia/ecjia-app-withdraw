@@ -339,7 +339,7 @@ class admin extends ecjia_admin
             $WithdrawRecordRepository->createWithdrawRecord([
                 'order_sn' => $account['order_sn'],
                 'withdraw_code' => $account['payment'],
-                'withdraw_name' => '',
+                'withdraw_name' => $account['payment_name'],
                 'withdraw_amount' => $account['real_amount'],
             ]);
 
