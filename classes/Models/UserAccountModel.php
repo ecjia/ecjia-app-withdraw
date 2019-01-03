@@ -38,6 +38,7 @@ class UserAccountModel extends Model
         'from_value',
         'process_type',
         'payment',
+        'payment_name',
         'is_paid',
         'bank_name',
         'bank_branch_name',
