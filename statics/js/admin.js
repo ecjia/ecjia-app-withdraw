@@ -69,10 +69,10 @@
                         }
 
                         if (data.status == 1) {
-                            //@todo 关闭选中
-                            // $('input[name="payment"]').each(function(){
-                            //     $(this).removeAttr('checked');
-                            // });
+                            //移除已经选中的提现方式
+                            $('input[name="payment"]').each(function () {
+                                $(this).prop('checked', false).parent().removeClass('uni-checked');
+                            });
                             $(".control-group-user").removeClass("hide");
                             $(".control-group-user").find('.userinfo').html(data.username);
                             $(".control-group-user").find('.user_money').html(data.user_money);
@@ -147,24 +147,25 @@
             });
         },
 
-        select_payment: function() {
-            $('input[name="payment"]').off('click').on('click', function() {
-               var $this = $(this),
-                   code = $this.val(),
-                   url = $this.parents('.chk_radio').attr('data-url'),
-                   user_id = $('input[name="user_id"]').val();
-               if (user_id == 0 || user_id == undefined) {
-                   return false;
-               }
+        select_payment: function () {
+            $('input[name="payment"]').off('click').on('click', function () {
+                var $this = $(this),
+                    code = $this.val(),
+                    url = $this.parents('.chk_radio').attr('data-url'),
+                    user_id = $('input[name="user_id"]').val();
+
+                if (user_id == 0 || user_id == undefined) {
+                    return false;
+                }
+
                 $('.user_bank_card').html('');
-               $.post(url, {code: code, user_id: user_id}, function(data) {
-                   if (data.state == 'error') {
-                       ecjia.admin.showmessage(data);
-                       return false;
-                   }
-                   console.log(data);
-                   $('.user_bank_card').html(data.content);
-               });
+                $.post(url, {code: code, user_id: user_id}, function (data) {
+                    if (data.state == 'error') {
+                        ecjia.admin.showmessage(data);
+                        return false;
+                    }
+                    $('.user_bank_card').html(data.content);
+                });
             });
         }
     };
