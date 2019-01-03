@@ -11,6 +11,7 @@ namespace Ecjia\App\Withdraw\Repositories;
 use Ecjia\App\Withdraw\WithdrawConstant;
 use Royalcms\Component\Repository\Repositories\AbstractRepository;
 use RC_Time;
+use ecjia;
 
 /**
  * Class UserAccountRepository
@@ -44,20 +45,35 @@ class UserAccountRepository extends AbstractRepository
      */
     public function insertUserAccount($data, $amount)
     {
+        $withdraw_fee = ecjia::config('withdraw_fee');
+        if ($withdraw_fee > 0) {
+            $pay_fee = $amount * $withdraw_fee / 100;
+        } else {
+            $pay_fee = 0.00;
+        }
+
         $data = array(
             'user_id'		=> $data['user_id'],
             'order_sn'		=> $data['order_sn'],
-            'admin_user'	=> '',
-            'amount'		=> $amount,
+            'admin_user'	=> $data['admin_user'] ?: '',
             'add_time'		=> RC_Time::gmtime(),
             'paid_time'		=> 0,
-            'admin_note'	=> '' ,
+            'admin_note'	=> $data['admin_note'] ?: '',
             'user_note'		=> $data['user_note'],
             'process_type'	=> $this->process_type,
             'payment'		=> $data['payment'],
-            'is_paid'		=> 0,
+            'is_paid'		=> WithdrawConstant::WITHDRAW_RECORD_STATUS_WAIT,
+            'amount'		=> (-1) * $amount, //申请金额
+            'pay_fee'       => $pay_fee, //手续费
+            'real_amount'   => $amount - $pay_fee, //到账金额
             'from_type'		=> $data['from_type'],
-            'from_value'	=> $data['from_type']
+            'from_value'	=> $data['from_value'],
+
+            'bank_name'         => $data['bank_name'],
+            'bank_branch_name'  => $data['bank_branch_name'],
+            'bank_card'         => $data['bank_card'],
+            'cardholder'        => $data['cardholder'],
+            'bank_en_short'     => $data['bank_en_short'],
         );
         return $this->getModel()->create($data);
     }
