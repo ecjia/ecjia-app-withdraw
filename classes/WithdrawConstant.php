@@ -54,15 +54,20 @@ class WithdrawConstant
     /**
      * 流水记录的支付状态
      */
-    const WITHDRAW_RECORD_STATUS_WAIT        = 0; //等待支付
-    const WITHDRAW_RECORD_STATUS_PAYED       = 1; //支付完成
-    const WITHDRAW_RECORD_STATUS_PROGRESS    = 2; //支付进行中
-    const WITHDRAW_RECORD_STATUS_FAIL        = 11; //支付失败
-    const WITHDRAW_RECORD_STATUS_REFUND      = 21; //银行退票
+    const WITHDRAW_RECORD_STATUS_WAIT       = 0; //等待支付
+    const WITHDRAW_RECORD_STATUS_PAYED      = 1; //支付完成
+    const WITHDRAW_RECORD_STATUS_PROGRESS   = 2; //支付进行中
+    const WITHDRAW_RECORD_STATUS_FAILED     = 11; //支付失败
+    const WITHDRAW_RECORD_STATUS_REFUND     = 21; //银行退票
 
 
-    const ORDER_PAY_STATUS_UNPAY          = 0; //未支付
-    const ORDER_PAY_STATUS_PAYED          = 1; //已支付
-    const ORDER_PAY_STATUS_CANCEL         = 2; //已取消
+    /**
+     * user_account表中is_paid字段的提现支付状态
+     */
+    const ORDER_PAY_STATUS_UNPAY            = 0; //未确认，未支付
+    const ORDER_PAY_STATUS_PAYED            = 1; //已确认，已支付
+    const ORDER_PAY_STATUS_CANCEL           = 2; //已取消
+    const ORDER_PAY_STATUS_FAILED           = 11; //已确认，支付失败
+
 
 }

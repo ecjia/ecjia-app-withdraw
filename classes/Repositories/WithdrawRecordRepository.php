@@ -63,17 +63,17 @@ class WithdrawRecordRepository extends AbstractRepository
 
     /**
      * 退款成功记录
-     * @param string $refund_out_no 退款商户号
-     * @param string $refund_trade_no 退款流水号
-     * @param array $refund_info 退款信息，序列化存储
+     * @param string $order_sn 退款商户号
+     * @param string $withdraw_trade_no 退款流水号
+     * @param array $return_info 退款信息，序列化存储
      */
-    public function withdrawSuccessfulRecord($refund_out_no, $refund_trade_no, array $refund_info)
+    public function withdrawSuccessfulRecord($order_sn, $withdraw_trade_no, array $return_info)
     {
-        $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
+        $model = $this->findUnSuccessfulWithdrawOrderSn($order_sn);
         if (!empty($model)) {
-            $model->refund_trade_no = $refund_trade_no;
+            $model->refund_trade_no = $withdraw_trade_no;
             $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_REFUND;
-            $model->refund_info = serialize($refund_info);
+            $model->success_result = serialize($return_info);
             $model->last_error_message = null;
             $model->last_error_time = null;
             $model->save();
