@@ -289,6 +289,12 @@ class admin extends ecjia_admin
 
         $this->assign('form_action', RC_Uri::url('withdraw/admin/action'));
 
+        if (!empty($account_info['bank_card'])) {
+            $bank_card_str = substr($account_info['bank_card'], -4);
+            $account_info['formated_payment_name'] = $account_info['bank_name'] . ' (' . $bank_card_str . ')';
+        } else {
+            $account_info['formated_payment_name'] = $account_info['bank_name'] . ' (' . $account_info['cardholder'] . ')';
+        }
         $this->assign('account_info', $account_info);
         $this->assign('order_sn', $order_sn);
         $this->assign('id', $id);

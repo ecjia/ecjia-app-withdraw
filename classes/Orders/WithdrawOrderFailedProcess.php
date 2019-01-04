@@ -34,7 +34,7 @@ class WithdrawOrderFailedProcess extends WithdrawOrderSuccessProcess
      */
     protected function updateAccountMoney()
     {
-        $amount = $this->order->amount;
+        $amount = abs($this->order->amount);
 
         $this->user_account->withdrawCancel($amount);
     }
