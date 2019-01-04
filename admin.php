@@ -370,6 +370,32 @@ class admin extends ecjia_admin
         return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => $pjaxurl));
     }
 
+    //对账查询
+    public function query()
+    {
+
+        /* 检查权限 */
+        $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
+
+        /* 初始化 */
+        $id         = $this->request->input('id');
+
+        /* 查询当前的预付款信息 */
+        $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
+
+        //到款状态不能再次修改
+        if (empty($account)) {
+            return $this->showmessage('该订单不存在', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        }
+
+        $result = (new \Ecjia\App\Withdraw\Transfers\TransferQueryManager($account['order_sn']))->transfer();
+        dd($result);
+
+
+
+        return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
+    }
+
     /**
      * 删除一条信息
      */
@@ -601,12 +627,6 @@ class admin extends ecjia_admin
         $content = $this->fetch('library/user_bank_card.lbi');
 
         return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('content' => $content));
-    }
-
-    //对账查询
-    public function query()
-    {
-        return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
     }
 
     /**
