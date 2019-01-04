@@ -597,6 +597,12 @@ class admin extends ecjia_admin
         return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('content' => $content));
     }
 
+    //对账查询
+    public function query()
+    {
+        return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
+    }
+
     /**
      * 获取提现申请列表
      */

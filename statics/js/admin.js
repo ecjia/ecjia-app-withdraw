@@ -178,6 +178,7 @@
     app.account_check = {
         init: function () {
             app.account_check.submit();
+            app.account_check.withdraw_query();
         },
 
         submit: function () {
@@ -194,6 +195,16 @@
             }
             var options = $.extend(ecjia.admin.defaultOptions.validate, option);
             $this.validate(options);
+        },
+
+        withdraw_query: function () {
+            $('.withdraw_query').off('click').on('click', function () {
+                var $this = $(this),
+                    url = $this.attr('data-url');
+                $.post(url, function (data) {
+                    ecjia.admin.showmessage(data);
+                });
+            });
         }
     };
 
