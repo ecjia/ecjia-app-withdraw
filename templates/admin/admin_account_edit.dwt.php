@@ -41,27 +41,27 @@
 					</div>
 				</div>
 
-				<div class="control-group-user hide">
-					<div class="control-group formSep">
-						<label class="control-label">会员名称：</label>
-						<div class="controls userinfo l_h30">
-						</div>
-					</div>
-
-					<div class="control-group formSep">
-						<label class="control-label">可用余额：</label>
-						<div class="controls user_money l_h30">
-						</div>
-					</div>
-
-					<div class="control-group formSep">
-						<label class="control-label">微信昵称：</label>
-						<div class="controls wechat_nickname">
-							<span></span>
-							<div class="help-block">仔细查看会员手机号、名称、微信昵称是否正确，若正确请忽视，若不正确，请主动调整手机号。</div>
-						</div>
-					</div>
-				</div>
+<!--				<div class="control-group-user hide">-->
+<!--					<div class="control-group formSep">-->
+<!--						<label class="control-label">会员名称：</label>-->
+<!--						<div class="controls userinfo l_h30">-->
+<!--						</div>-->
+<!--					</div>-->
+<!---->
+<!--					<div class="control-group formSep">-->
+<!--						<label class="control-label">可用余额：</label>-->
+<!--						<div class="controls user_money l_h30">-->
+<!--						</div>-->
+<!--					</div>-->
+<!---->
+<!--					<div class="control-group formSep">-->
+<!--						<label class="control-label">微信昵称：</label>-->
+<!--						<div class="controls wechat_nickname">-->
+<!--							<span></span>-->
+<!--							<div class="help-block">仔细查看会员手机号、名称、微信昵称是否正确，若正确请忽视，若不正确，请主动调整手机号。</div>-->
+<!--						</div>-->
+<!--					</div>-->
+<!--				</div>-->
 
 				<div class="control-group formSep">
 					<label class="control-label">提现金额：</label>
