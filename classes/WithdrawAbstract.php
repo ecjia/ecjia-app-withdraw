@@ -156,15 +156,24 @@ abstract class WithdrawAbstract extends AbstractPlugin
 
     /**
      * 获取用户绑定的提现方式
-     * @return mixed
+     * @return string
      */
     abstract public function getBankType();
 
     /**
-     * 转帐操作方法
-     * @return mixed
+     * 转帐查询方法
+     * @param $order_sn
+     * @return \Royalcms\Component\Support\Collection | \ecjia_error
      */
     abstract public function transfers($order_sn);
+
+    /**
+     * 转帐查询方法
+     * @param $order_sn
+     * @return \Royalcms\Component\Support\Collection | \ecjia_error
+     */
+    abstract public function transfersQuery($order_sn);
+
 }
 
 // end

@@ -35,6 +35,8 @@ class WithdrawRecordRepository extends AbstractRepository
             $insertData['withdraw_amount'] = array_get($data, 'withdraw_amount');
             $insertData['withdraw_status'] = WithdrawConstant::WITHDRAW_RECORD_STATUS_WAIT;
             $insertData['create_time'] = RC_Time::gmtime();
+            $insertData['transfer_bank_no'] = array_get($data, 'transfer_bank_no');
+            $insertData['transfer_true_name'] = array_get($data, 'transfer_true_name');
 
             $model = $this->getModel()->create($insertData);
         }
@@ -42,44 +44,33 @@ class WithdrawRecordRepository extends AbstractRepository
         return $model;
     }
 
-//    /**
-//     * 退款成功记录
-//     * @param string $refund_out_no 退款商户号
-//     * @param string $refund_trade_no 退款流水号
-//     * @param array $refund_info 退款信息，序列化存储
-//     */
-//    public function refundProcessRecord($refund_out_no, $refund_trade_no, array $refund_info)
-//    {
-//        $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
-//        if (!empty($model)) {
-//            $model->refund_trade_no = $refund_trade_no;
-//            $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_PROGRESS;
-//            $model->refund_info = serialize($refund_info);
-//            $model->last_error_message = null;
-//            $model->last_error_time = null;
-//            $model->save();
-//        }
-//    }
-
     /**
-     * 退款成功记录
-     * @param string $order_sn 退款商户号
-     * @param string $withdraw_trade_no 退款流水号
-     * @param array $return_info 退款信息，序列化存储
+     * 提现成功记录
+     * @param string $order_sn 提现商户号
+     * @param string $withdraw_trade_no 提现流水号
+     * @param array $return_info 提现成功信息，序列化存储
      */
-    public function withdrawSuccessfulRecord($order_sn, $withdraw_trade_no, array $return_info)
+    public function withdrawSuccessfulRecord($order_sn, $withdraw_trade_no, $account = null, $partner_id = null, array $return_info = [])
     {
         $model = $this->findUnSuccessfulWithdrawOrderSn($order_sn);
         if (!empty($model)) {
-            $model->refund_trade_no = $withdraw_trade_no;
-            $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_REFUND;
+
+            //处理refund_info是否有数据，如果有数据，合并后存入
+            $return_info_data = unserialize($model->success_result);
+            if (! empty($return_info_data)) {
+                $return_info = array_merge($return_info_data, $return_info);
+            }
+
+            $model->trade_no = $withdraw_trade_no;
+            $model->withdraw_status = WithdrawConstant::WITHDRAW_RECORD_STATUS_PAYED;
+            $model->transfer_time = RC_Time::gmtime();
+            $model->payment_time = RC_Time::gmtime();
+            $model->account = $account;
+            $model->partner_id = $partner_id;
             $model->success_result = serialize($return_info);
             $model->last_error_message = null;
             $model->last_error_time = null;
             $model->save();
-
-            //消费订单退款成功后续处理
-            (new \Ecjia\App\Refund\RefundProcess\BuyOrderRefundProcess(null, $refund_trade_no))->run();
         }
 
     }
@@ -87,64 +78,37 @@ class WithdrawRecordRepository extends AbstractRepository
     /**
      * 退款失败记录
      *
-     * @param string $refund_out_no 退款商户号
+     * @param string $order_sn 提现商户号
      * @param string $error_message
      */
-    public function withdrawErrorRecord($refund_out_no, $error_message)
+    public function withdrawErrorRecord($order_sn, $error_message)
     {
-        $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
+        $model = $this->findUnSuccessfulWithdrawOrderSn($order_sn);
         if (!empty($model)) {
-            $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_FAIL;
+            $model->transfer_time = RC_Time::gmtime();
+            $model->withdraw_status = WithdrawConstant::WITHDRAW_RECORD_STATUS_FAILED;
             $model->last_error_message = $error_message;
-            $model->last_error_time = \RC_Time::gmtime();
+            $model->last_error_time = RC_Time::gmtime();
             $model->save();
         }
     }
 
     /**
-     * 退款失败记录
+     * 提现失败记录
      *
-     * @param string $refund_out_no 退款商户号
+     * @param string $order_sn 提现商户号
      * @param string $error_message
      */
-    public function withdrawFailedRecord($refund_out_no, $refund_trade_no, array $refund_info)
+    public function withdrawFailedRecord($order_sn, $error_message, $account = null, $partner_id = null)
     {
-        $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
+        $model = $this->findUnSuccessfulWithdrawOrderSn($order_sn);
         if (!empty($model)) {
-            //处理refund_info是否有数据，如果有数据，合并后存入
-            $refund_info_data = unserialize($model->refund_info);
-            if (! empty($refund_info_data)) {
-                $refund_info = array_merge($refund_info_data, $refund_info);
-            }
-
-            $model->refund_trade_no = $refund_trade_no;
-            $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_FAIL;
-            $model->refund_info = serialize($refund_info);
-            $model->save();
-        }
-    }
-
-    /**
-     * 退款关闭记录
-     *
-     * @param string $refund_out_no 退款商户号
-     * @param string $error_message
-     */
-    public function withdrawClosedRecord($refund_out_no, $refund_trade_no, array $refund_info)
-    {
-        $model = $this->findUnSuccessfulRefundOutNo($refund_out_no);
-        if (!empty($model)) {
-            //处理refund_info是否有数据，如果有数据，合并后存入
-            $refund_info_data = unserialize($model->refund_info);
-            if (! empty($refund_info_data)) {
-                $refund_info = array_merge($refund_info_data, $refund_info);
-            }
-
-            $model->refund_trade_no = $refund_trade_no;
-            $model->refund_status = PayConstant::PAYMENT_REFUND_STATUS_REFUND;
-            $model->refund_info = serialize($refund_info);
-            $model->last_error_message = null;
-            $model->last_error_time = null;
+            $model->account = $account;
+            $model->partner_id = $partner_id;
+            $model->transfer_time = RC_Time::gmtime();
+            $model->last_error_message = $error_message;
+            $model->last_error_time = RC_Time::gmtime();
+            $model->withdraw_status = WithdrawConstant::WITHDRAW_RECORD_STATUS_FAILED;
             $model->save();
         }
     }
