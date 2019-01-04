@@ -45,7 +45,7 @@ class WithdrawOrderSuccessProcess
         $this->updateWithdrawOrder($admin_user, $admin_note);
         //处理冻结金额
         //更新账户日志
-        $this->updateAccountMoney();
+        $this->updateAccountMoney($admin_note);
 
         //发送提现通知
         $this->sendSmsMessageNotice();
@@ -64,11 +64,11 @@ class WithdrawOrderSuccessProcess
     /**
      * 更新帐户资金
      */
-    protected function updateAccountMoney()
+    protected function updateAccountMoney($change_desc = null)
     {
         $amount = $this->order->amount;
 
-        $this->user_account->withdrawSuccessful($amount);
+        $this->user_account->withdrawSuccessful($amount, $change_desc);
     }
 
     /**
