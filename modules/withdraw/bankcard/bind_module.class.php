@@ -104,11 +104,13 @@ class withdraw_bankcard_bind_module extends api_front implements api_interface {
     	    'bank_type'			=> 'bank',
     	];
     	if($bank_user) {
+    		$data['update_time'] = RC_Time::gmtime();
     	    RC_DB::table('withdraw_user_bank')->where('user_id', $user_id)->where('user_type', 'user')->where('bank_type', 'bank')->update($data);
     	} else {
-    	    $data['user_id'] = $user_id;
-    	    $data['user_type'] = 'user';
-    	    $data['bank_type'] = 'bank';
+    	    $data['user_id'] 	= $user_id;
+    	    $data['user_type']  = 'user';
+    	    $data['bank_type']  = 'bank';
+    	    $data['add_time']   = RC_Time::gmtime();
     	    RC_DB::table('withdraw_user_bank')->insert($data);
     	}
     	

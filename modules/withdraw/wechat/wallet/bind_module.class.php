@@ -99,11 +99,13 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
     	    'bank_type'			=> 'wechat',
     	];
     	if($bank_user) {
+    		$data['update_time'] = RC_Time::gmtime();
     	    RC_DB::table('withdraw_user_bank')->where('user_id', $user_id)->where('user_type', 'user')->where('bank_type', 'wechat')->update($data);
     	} else {
     	    $data['user_id'] = $user_id;
     	    $data['user_type'] = 'user';
     	    $data['bank_type'] = 'wechat';
+    	    $data['add_time'] = RC_Time::gmtime();
     	    RC_DB::table('withdraw_user_bank')->insert($data);
     	}
     	
