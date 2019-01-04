@@ -171,7 +171,7 @@ class admin extends ecjia_admin
         $user_info = RC_DB::table('users')->where('user_id', $user_id)->first();
         /* 此会员是否存在 */
         if (empty($user_info)) {
-            return $this->showmessage(RC_Lang::get('user::user_account.username_not_exist'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            return $this->showmessage('该会员信息不存在', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
         if (empty($payment)) {

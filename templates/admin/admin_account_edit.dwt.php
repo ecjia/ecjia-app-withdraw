@@ -97,10 +97,10 @@
 				<div class="control-group formSep">
 					<label class="control-label">{lang key='user::user_account.label_surplus_notic'}</label>
 					<div class="controls">
-						<textarea class="span6" name="admin_note" rows="6">{$user_surplus.admin_note}</textarea>
+						<textarea class="span12" name="admin_note" rows="6">{$user_surplus.admin_note}</textarea>
 					</div>
 					<div class="controls">
-						<select class="select_admin_note span5">
+						<select class="select_admin_note span12">
 							<option value="0">请选择管理员备注</option>
 							<option value="1">线下打款</option>
 							<option value="2">已通过线下银行汇款成功</option>
