@@ -105,6 +105,9 @@
 							<option value="1">线下打款</option>
 							<option value="2">已通过线下银行汇款成功</option>
 							<option value="3">会员在线下门店通过现金方式提现完成</option>
+                            <option value="4">现金提现成功</option>
+                            <option value="5">已打款至用户微信零钱</option>
+                            <option value="6">人工记录资金变动</option>
 						</select>
 						<span class="help-block">此备注仅限管理员查看，备注内容可使用快捷用语。</span>
 					</div>
