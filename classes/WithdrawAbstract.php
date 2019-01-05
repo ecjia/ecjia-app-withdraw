@@ -161,14 +161,14 @@ abstract class WithdrawAbstract extends AbstractPlugin
     abstract public function getBankType();
 
     /**
-     * 转帐查询方法
+     * 转账查询方法
      * @param $order_sn
      * @return \Royalcms\Component\Support\Collection | \ecjia_error
      */
     abstract public function transfers($order_sn);
 
     /**
-     * 转帐查询方法
+     * 转账查询方法
      * @param $order_sn
      * @return \Royalcms\Component\Support\Collection | \ecjia_error
      */
