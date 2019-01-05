@@ -620,7 +620,7 @@ class admin extends ecjia_admin
     public function download()
     {
         $data = $this->get_withdraw_list(true);
-
+        _dump($data,1);
         RC_Excel::load(RC_APP_PATH . 'withdraw' . DIRECTORY_SEPARATOR . 'statics/files/withdraw.xls', function ($excel) use ($data) {
             $excel->sheet('First sheet', function ($sheet) use ($data) {
                 foreach ($data as $k => $v) {
