@@ -114,6 +114,51 @@
 	</div>
 </div>
 
+{if $account_info.is_paid eq 1 && $record_info}
+<div class="row-fluid">
+    <div class="span12">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                <div class="accordion-toggle acc-in" data-toggle="collapse" data-target="#telescopic1">
+                    <strong>提现流水记录</strong>
+                </div>
+            </div>
+            <div class="accordion-body in collapse" id="telescopic1">
+                <table class="table table-oddtd m_b0">
+                    <tbody class="first-td-no-leftbd">
+                        <tr>
+                            <td><div align="right"><strong>商户单号：</strong></div></td>
+                            <td>{$record_info.order_sn}</td>
+
+                            <td><div align="right"><strong>支付公司单号：</strong></div></td>
+                            <td>{$record_info.trade_no}</td>
+                        </tr>
+                        <tr>
+                            <td><div align="right"><strong>付款商户号：</strong></div></td>
+                            <td>{$record_info.partner_id}</td>
+
+                            <td><div align="right"><strong>付款账号：</strong></div></td>
+                            <td>{$record_info.transfer_bank_no}</td>
+                        </tr>
+                        <tr>
+                            <td><div align="right"><strong>创建时间：</strong></div></td>
+                            <td>{$record_info.create_time}</td>
+
+                            <td><div align="right"><strong>付款成功时间：</strong></div></td>
+                            <td>{$record_info.payment_time}</td>
+                        </tr>
+                        <tr>
+                            <td><div align="right"><strong>转账时间：</strong></div></td>
+                            <td colspan="3">{$record_info.transfer_time}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{/if}
+
 <div class="row-fluid">
 	<div class="span12">
 		{if $is_paid eq 0}
