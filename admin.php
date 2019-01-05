@@ -326,59 +326,67 @@ class admin extends ecjia_admin
         $is_paid    = isset($_POST['confirm']) ? 1 : 2;
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
 
-        /* 查询当前的预付款信息 */
-        $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
-        //到款状态不能再次修改
-        if (!empty($account['is_paid'])) {
-            return $this->showmessage('该订单已审核，请勿重复操作', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-        }
+        try {
 
-        /* 同意,更新此条记录,扣除相应的余额 */
-        if ($is_paid == 1) {
-            $amount            = $account['amount'];
-            $user_frozen_money = user_account::get_frozen_money($account['user_id']);
-            $fmt_amount        = abs($amount);
-            /* 如果扣除的余额多于此会员的总冻结金额，提示 */
-            if ($fmt_amount > $user_frozen_money) {
-                return $this->showmessage('要提现的金额超过了此会员的帐户余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            /* 查询当前的预付款信息 */
+            $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
+            //到款状态不能再次修改
+            if (!empty($account['is_paid'])) {
+                return $this->showmessage('该订单已审核，请勿重复操作', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
             }
 
-            $WithdrawRecordRepository = new \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository();
-            $WithdrawRecordRepository->createWithdrawRecord([
-                'order_sn'           => $account['order_sn'],
-                'withdraw_code'      => $account['payment'],
-                'withdraw_name'      => $account['payment_name'],
-                'withdraw_amount'    => $account['real_amount'],
-                'transfer_bank_no'   => $account['bank_card'],
-                'transfer_true_name' => $account['cardholder'],
-            ]);
+            /* 同意,更新此条记录,扣除相应的余额 */
+            if ($is_paid == 1) {
+                $amount            = $account['amount'];
+                $user_frozen_money = user_account::get_frozen_money($account['user_id']);
+                $fmt_amount        = abs($amount);
+                /* 如果扣除的余额多于此会员的总冻结金额，提示 */
+                if ($fmt_amount > $user_frozen_money) {
+                    return $this->showmessage('要提现的金额超过了此会员的帐户余额，此操作将不可进行！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+                }
 
-            $result = (new \Ecjia\App\Withdraw\Transfers\TransferManager($account['order_sn']))->transfer();
+                $WithdrawRecordRepository = new \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository();
+                $WithdrawRecordRepository->createWithdrawRecord([
+                    'order_sn'           => $account['order_sn'],
+                    'withdraw_code'      => $account['payment'],
+                    'withdraw_name'      => $account['payment_name'],
+                    'withdraw_amount'    => $account['real_amount'],
+                    'transfer_bank_no'   => $account['bank_card'],
+                    'transfer_true_name' => $account['cardholder'],
+                ]);
 
-            if (is_ecjia_error($result)) {
-                //返回错误信息到页面上
-                return $this->showmessage($result->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+                $result = (new \Ecjia\App\Withdraw\Transfers\TransferManager($account['order_sn']))->transfer();
+
+                if (is_ecjia_error($result)) {
+                    //返回错误信息到页面上
+                    return $this->showmessage($result->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+                }
+
+                (new \Ecjia\App\Withdraw\Orders\WithdrawOrderSuccessProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
+
+            } else {
+                //取消提现后，返还用户资金
+                (new \Ecjia\App\Withdraw\Orders\WithdrawOrderFailedProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
             }
 
-            (new \Ecjia\App\Withdraw\Orders\WithdrawOrderSuccessProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
+            ecjia_admin::admin_log('(' . addslashes(RC_Lang::get('user::user_account.check')) . ')' . $admin_note, 'check', 'user_surplus');
 
-        } else {
-            //取消提现后，返还用户资金
-            (new \Ecjia\App\Withdraw\Orders\WithdrawOrderFailedProcess($account['order_sn']))->process($_SESSION['admin_name'], $admin_note);
+            $links = [
+                [
+                    'text' => RC_Lang::get('user::user_account.back_withdraw_list'),
+                    'href' => RC_Uri::url('withdraw/admin/init'),
+                ]
+            ];
+
+            $pjaxurl = RC_Uri::url('withdraw/admin/check', array('id' => $id));
+
+            return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => $pjaxurl));
+
+        }
+        catch (\Royalcms\Component\Database\QueryException $e) {
+            return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        ecjia_admin::admin_log('(' . addslashes(RC_Lang::get('user::user_account.check')) . ')' . $admin_note, 'check', 'user_surplus');
-
-        $links = [
-            [
-                'text' => RC_Lang::get('user::user_account.back_withdraw_list'),
-                'href' => RC_Uri::url('withdraw/admin/init'),
-            ]
-        ];
-
-        $pjaxurl = RC_Uri::url('withdraw/admin/check', array('id' => $id));
-
-        return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => $pjaxurl));
     }
 
     //对账查询
