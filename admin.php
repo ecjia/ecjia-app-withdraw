@@ -289,8 +289,8 @@ class admin extends ecjia_admin
 
         $this->assign('form_action', RC_Uri::url('withdraw/admin/action'));
 
-        if ($account_info['payment'] == 'withdraw_bank') {
-            $bank_card_str = substr($account_info['bank_card'], -4);
+        if ($account_info['bank_en_short'] !== 'WECHAT') {
+            $bank_card_str                         = substr($account_info['bank_card'], -4);
             $account_info['formated_payment_name'] = $account_info['bank_name'] . ' (' . $bank_card_str . ')';
         } else {
             $account_info['formated_payment_name'] = $account_info['bank_name'] . ' (' . $account_info['cardholder'] . ')';
@@ -298,6 +298,17 @@ class admin extends ecjia_admin
         $this->assign('account_info', $account_info);
         $this->assign('order_sn', $order_sn);
         $this->assign('id', $id);
+
+        $record_info = (new \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository())->findWithdrawOrderSn($account_info['order_sn']);
+
+        if (!empty($record_info)) {
+            $record_info = $record_info->toArray();
+
+            $record_info['create_time']   = !empty($record_info['create_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['create_time']) : '';
+            $record_info['payment_time']  = !empty($record_info['payment_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['payment_time']) : '';
+            $record_info['transfer_time'] = !empty($record_info['create_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['transfer_time']) : '';
+        }
+        $this->assign('record_info', $record_info);
 
         $this->display('admin_account_info.dwt');
     }
@@ -334,11 +345,11 @@ class admin extends ecjia_admin
 
             $WithdrawRecordRepository = new \Ecjia\App\Withdraw\Repositories\WithdrawRecordRepository();
             $WithdrawRecordRepository->createWithdrawRecord([
-                'order_sn'        => $account['order_sn'],
-                'withdraw_code'   => $account['payment'],
-                'withdraw_name'   => $account['payment_name'],
-                'withdraw_amount' => $account['real_amount'],
-                'transfer_bank_no' => $account['bank_card'],
+                'order_sn'           => $account['order_sn'],
+                'withdraw_code'      => $account['payment'],
+                'withdraw_name'      => $account['payment_name'],
+                'withdraw_amount'    => $account['real_amount'],
+                'transfer_bank_no'   => $account['bank_card'],
                 'transfer_true_name' => $account['cardholder'],
             ]);
 
@@ -378,7 +389,7 @@ class admin extends ecjia_admin
         $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
 
         /* 初始化 */
-        $id         = $this->request->input('id');
+        $id = $this->request->input('id');
 
         /* 查询当前的预付款信息 */
         $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
@@ -394,7 +405,7 @@ class admin extends ecjia_admin
             return $this->showmessage($result->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
+        return $this->showmessage('预支付机构对账成功，状态正常', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
     }
 
     /**
