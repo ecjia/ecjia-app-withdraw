@@ -708,7 +708,6 @@ class admin extends ecjia_admin
         if ($return_all) {
             $list = $db_user_account
                 ->where(RC_DB::raw('ua.is_paid'), 0)
-                ->orderBy(RC_DB::raw('ua.review_time'), 'desc')
                 ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
                 ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
                 ->get();
@@ -751,7 +750,6 @@ class admin extends ecjia_admin
             $page  = new ecjia_page($count, 15, 6);
 
             $list = $db_user_account
-                ->orderBy(RC_DB::raw('ua.review_time'), 'desc')
                 ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
                 ->take(15)
                 ->skip($page->start_id - 1)
