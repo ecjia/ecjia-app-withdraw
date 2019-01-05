@@ -196,31 +196,30 @@
             <div class="accordion-body in collapse" id="telescopic1">
                 <table class="table table-oddtd m_b0">
                     <tbody class="first-td-no-leftbd">
-                    <tr>
-                        <td><div align="right"><strong>商户单号：</strong></div></td>
-                        <td>{$record_info.order_sn}</td>
-
-                        <td><div align="right"><strong>支付公司单号：</strong></div></td>
-                        <td>{$record_info.trade_no}</td>
-                    </tr>
-                    <tr>
-                        <td><div align="right"><strong>付款商户号：</strong></div></td>
-                        <td>{$record_info.partner_id}</td>
-
-                        <td><div align="right"><strong>付款账号：</strong></div></td>
-                        <td>{$record_info.transfer_bank_no}</td>
-                    </tr>
-                    <tr>
-                        <td><div align="right"><strong>创建时间：</strong></div></td>
-                        <td>{$record_info.create_time}</td>
-
-                        <td><div align="right"><strong>付款成功时间：</strong></div></td>
-                        <td>{$record_info.payment_time}</td>
-                    </tr>
-                    <tr>
-                        <td><div align="right"><strong>转账时间：</strong></div></td>
-                        <td colspan="3">{$record_info.transfer_time}</td>
-                    </tr>
+                        <tr>
+                            <td><div align="right"><strong>商户单号：</strong></div></td>
+                            <td>{$record_info.order_sn}</td>
+                            <td><div align="right"><strong>提现状态：</strong></div></td>
+                            <td>{$record_info.label_withdraw_status}</td>
+                        </tr>
+                        <tr>
+                            <td><div align="right"><strong>支付公司单号：</strong></div></td>
+                            <td>{$record_info.trade_no}</td>
+                            <td><div align="right"><strong>付款商户号：</strong></div></td>
+                            <td>{$record_info.partner_id}</td>
+                        </tr>
+                        <tr>
+                            <td><div align="right"><strong>付款账号：</strong></div></td>
+                            <td>{$record_info.account}</td>
+                            <td><div align="right"><strong>创建时间：</strong></div></td>
+                            <td>{$record_info.create_time}</td>
+                        </tr>
+                        <tr>
+                            <td><div align="right"><strong>付款成功时间：</strong></div></td>
+                            <td>{$record_info.payment_time}</td>
+                            <td><div align="right"><strong>转账时间：</strong></div></td>
+                            <td>{$record_info.transfer_time}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

@@ -307,6 +307,8 @@ class admin extends ecjia_admin
             $record_info['create_time']   = !empty($record_info['create_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['create_time']) : '';
             $record_info['payment_time']  = !empty($record_info['payment_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['payment_time']) : '';
             $record_info['transfer_time'] = !empty($record_info['create_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['transfer_time']) : '';
+
+            $record_info['label_withdraw_status'] = (new \Ecjia\App\Withdraw\WithdrawConstant())->getWithdrawRecordStatus($record_info['withdraw_status']);
         }
         $this->assign('record_info', $record_info);
 
@@ -382,8 +384,7 @@ class admin extends ecjia_admin
 
             return $this->showmessage(RC_Lang::get('user::user_account.attradd_succed'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('links' => $links, 'pjaxurl' => $pjaxurl));
 
-        }
-        catch (\Royalcms\Component\Database\QueryException $e) {
+        } catch (\Royalcms\Component\Database\QueryException $e) {
             return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
