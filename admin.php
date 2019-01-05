@@ -192,33 +192,48 @@ class admin extends ecjia_admin
             return $this->showmessage($plugin->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        $user_bank_card = $plugin->getUserBankcard($user_id)->where('bank_card', $bank_card)->first();
-        if (empty($user_bank_card)) {
-            return $this->showmessage('没有绑定提现账户信息', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-        }
-
-        $user_bank_card = $user_bank_card->toArray();
+        $order_sn = ecjia_order_deposit_sn();
 
         $UserAccountRepository = new Ecjia\App\Withdraw\Repositories\UserAccountRepository();
 
-        $order_sn = ecjia_order_deposit_sn();
+        //现金提现
+        if ($payment == 'withdraw_cash') {
+            $data = array(
+                'user_id'      => $user_info['user_id'],
+                'order_sn'     => $order_sn,
+                'admin_user'   => $_SESSION['admin_name'],
+                'admin_note'   => $admin_note,
+                'payment'      => $payment,
+                'payment_name' => $plugin->getName(),
+                'from_type'    => 'admim',
+                'from_value'   => $user_info['user_id'],
+                'user_note'    => ''
+            );
+        } else {
+            $user_bank_card = $plugin->getUserBankcard($user_id)->where('bank_card', $bank_card)->first();
+            if (empty($user_bank_card)) {
+                return $this->showmessage('没有绑定提现账户信息', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            }
 
-        $data = array(
-            'user_id'          => $user_info['user_id'],
-            'order_sn'         => $order_sn,
-            'admin_user'       => $_SESSION['admin_name'],
-            'admin_note'       => $admin_note,
-            'payment'          => $payment,
-            'payment_name'     => $plugin->getName(),
-            'from_type'        => 'admim',
-            'from_value'       => $user_info['user_id'],
-            'bank_name'        => $user_bank_card['bank_name'],
-            'bank_branch_name' => $user_bank_card['bank_branch_name'],
-            'bank_card'        => $user_bank_card['bank_card'],
-            'cardholder'       => $user_bank_card['cardholder'],
-            'bank_en_short'    => $user_bank_card['bank_en_short'],
-            'user_note'        => ''
-        );
+            $user_bank_card = $user_bank_card->toArray();
+
+            $data = array(
+                'user_id'          => $user_info['user_id'],
+                'order_sn'         => $order_sn,
+                'admin_user'       => $_SESSION['admin_name'],
+                'admin_note'       => $admin_note,
+                'payment'          => $payment,
+                'payment_name'     => $plugin->getName(),
+                'from_type'        => 'admim',
+                'from_value'       => $user_info['user_id'],
+                'bank_name'        => $user_bank_card['bank_name'],
+                'bank_branch_name' => $user_bank_card['bank_branch_name'],
+                'bank_card'        => $user_bank_card['bank_card'],
+                'cardholder'       => $user_bank_card['cardholder'],
+                'bank_en_short'    => $user_bank_card['bank_en_short'],
+                'user_note'        => ''
+            );
+        }
 
         $model = $UserAccountRepository->insertUserAccount($data, $apply_amount);
 
@@ -291,7 +306,7 @@ class admin extends ecjia_admin
 
         if ($account_info['bank_en_short'] !== 'WECHAT') {
             $bank_card_str                         = substr($account_info['bank_card'], -4);
-            $account_info['formated_payment_name'] = $account_info['bank_name'] . ' (' . $bank_card_str . ')';
+            $account_info['formated_payment_name'] = !empty($account_info['bank_name']) ? $account_info['bank_name'] . ' (' . $bank_card_str . ')' : '';
         } else {
             $account_info['formated_payment_name'] = $account_info['bank_name'] . ' (' . $account_info['cardholder'] . ')';
         }
@@ -637,15 +652,19 @@ class admin extends ecjia_admin
             return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        if (empty($user_bank_card)) {
-            return $this->showmessage('没有绑定提现账户信息', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+        $content = '';
+        if ($code != 'withdraw_cash') {
+
+            if (empty($user_bank_card)) {
+                return $this->showmessage('没有绑定提现账户信息', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            }
+
+            $user_bank_card = $user_bank_card->toArray();
+
+            $this->assign('user_bank_card', $user_bank_card);
+
+            $content = $this->fetch('library/user_bank_card.lbi');
         }
-
-        $user_bank_card = $user_bank_card->toArray();
-
-        $this->assign('user_bank_card', $user_bank_card);
-
-        $content = $this->fetch('library/user_bank_card.lbi');
 
         return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('content' => $content));
     }
