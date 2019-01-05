@@ -336,7 +336,7 @@ class admin extends ecjia_admin
     public function action()
     {
         /* 检查权限 */
-        $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
+        $this->admin_priv('withdraw_check', ecjia::MSGTYPE_JSON);
 
         /* 初始化 */
         $id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
@@ -687,8 +687,11 @@ class admin extends ecjia_admin
             ->where(RC_DB::raw('ua.process_type'), 1);
 
         if ($filter['keywords']) {
-            $db_user_account->where(RC_DB::raw('u.user_name'), 'like', '%' . mysql_like_quote($filter['keywords']) . '%')
-                ->orWhere(RC_DB::raw('u.mobile_phone'), 'like', '%' . mysql_like_quote($filter['keywords']) . '%');
+            $keywords = $filter['keywords'];
+            $db_user_account->where(function ($query) use ($keywords) {
+                $query->where(RC_DB::raw('u.user_name'), 'like', '%' . mysql_like_quote($keywords) . '%')
+                    ->orWhere(RC_DB::raw('u.mobile_phone'), 'like', '%' . mysql_like_quote($keywords) . '%');
+            });
         }
 
         if (!empty($filter['start_date'])) {
@@ -765,7 +768,7 @@ class admin extends ecjia_admin
                 $arr[$key]['apply_amount']     = $list[$key]['apply_amount'];
                 $arr[$key]['formated_pay_fee'] = $list[$key]['formated_pay_fee'];
                 $arr[$key]['formated_amount']  = $list[$key]['formated_amount'];
-                $arr[$key]['payment']          = $list[$key]['payment'];
+                $arr[$key]['payment_name']     = $list[$key]['payment_name'];
                 $arr[$key]['add_date']         = $list[$key]['add_date'];
                 $arr[$key]['status']           = $list[$key]['is_paid'] == 1 ? '已完成' : ($list[$key]['is_paid'] == 0 ? '待审核' : '已取消');
             }
