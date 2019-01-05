@@ -708,6 +708,7 @@ class admin extends ecjia_admin
         if ($return_all) {
             $list = $db_user_account
                 ->where(RC_DB::raw('ua.is_paid'), 0)
+                ->orderBy(RC_DB::raw('ua.review_time'), 'desc')
                 ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
                 ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
                 ->get();
@@ -752,7 +753,7 @@ class admin extends ecjia_admin
 
                 $arr[$key]['order_sn']         = $value['order_sn'];
                 $arr[$key]['user_name']        = $value['user_name'];
-                $arr[$key]['apply_amount']     = $list[$key]['formated_pay_fee'];
+                $arr[$key]['apply_amount']     = $list[$key]['apply_amount'];
                 $arr[$key]['formated_pay_fee'] = $list[$key]['formated_pay_fee'];
                 $arr[$key]['formated_amount']  = $list[$key]['formated_amount'];
                 $arr[$key]['payment_name']     = !empty($value['payment_name']) ? $value['payment_name'] : '银行转账提现';
