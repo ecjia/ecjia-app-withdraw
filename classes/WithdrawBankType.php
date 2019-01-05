@@ -55,7 +55,7 @@ class WithdrawBankType
 
         if ($support_bank) {
             $plugins->push([
-                'bank_name' => '银行转帐',
+                'bank_name' => '银行转账',
                 'bank_type' => 'bank',
             ]);
         }

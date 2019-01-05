@@ -37,7 +37,9 @@
 			<div class="{if $is_paid eq 1}step-cur{else}step-done{/if}">
 				<div class="step-no">3</div>
 				<div class="m_t5">{if $account_info.is_paid eq 1}已完成{else}未完成{/if}</div>
+                {if $account_info.is_paid eq 1}
 				<div class="m_t5 ecjiafc-blue">{$account_info.review_time}</div>
+                {/if}
 			</div>
 		</li>
 	</ul>
