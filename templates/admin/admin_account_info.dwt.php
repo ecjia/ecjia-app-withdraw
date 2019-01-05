@@ -60,7 +60,11 @@
 							<td><div align="right"><strong>状态：</strong></div></td>
 							<td>
                                 {if $account_info.is_paid eq 0}待审核{else if $account_info.is_paid eq 1}已完成{else}已取消{/if}
+
+                                {if $account_info.is_paid eq 1}
                                 <a class="btn m_l5 withdraw_query" href="javascript:;" data-url="{RC_Uri::url('withdraw/admin/query')}&id={$account_info.id}">对账查询</a>
+                                {/if}
+
                             </td>
 						</tr>
 
