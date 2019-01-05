@@ -47,6 +47,9 @@ class WithdrawBankType
                 $support_bank = true;
                 return false;
             }
+            if ($item['bank_type'] == 'cash') {
+            	return false;
+            }
             return true;
         });
 
