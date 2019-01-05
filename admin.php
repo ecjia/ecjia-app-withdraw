@@ -739,9 +739,6 @@ class admin extends ecjia_admin
         $arr = [];
         if (!empty($list)) {
 
-            $withdraw_bank = new \Ecjia\App\Withdraw\WithdrawBankType();
-            $plugins       = $withdraw_bank->getPlugins();
-
             foreach ($list as $key => $value) {
                 $apply_amount                   = abs($value['amount']);
                 $list[$key]['apply_amount']     = ecjia_price_format($apply_amount);
