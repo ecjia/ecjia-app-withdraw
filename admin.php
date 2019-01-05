@@ -712,6 +712,28 @@ class admin extends ecjia_admin
                 ->orderBy(RC_DB::raw($filter['sort_by']), $filter['sort_order'])
                 ->select(RC_DB::raw('ua.*'), RC_DB::raw('u.user_name'))
                 ->get();
+
+            $arr = [];
+            if (!empty($list)) {
+                foreach ($list as $key => $value) {
+                    $apply_amount              = abs($value['amount']);
+                    $value['apply_amount']     = ecjia_price_format($apply_amount);
+                    $value['add_date']         = RC_Time::local_date(ecjia::config('time_format'), $value['add_time']);
+                    $value['formated_pay_fee'] = ecjia_price_format($value['pay_fee']);
+                    $real_amount               = abs($value['amount']) - $value['pay_fee'];
+                    $value['formated_amount']  = ecjia_price_format($real_amount);
+
+                    $arr[$key]['order_sn']         = $value['order_sn'];
+                    $arr[$key]['user_name']        = $value['user_name'];
+                    $arr[$key]['apply_amount']     = $value['apply_amount'];
+                    $arr[$key]['formated_pay_fee'] = $value['formated_pay_fee'];
+                    $arr[$key]['formated_amount']  = $value['formated_amount'];
+                    $arr[$key]['payment_name']     = !empty($value['payment_name']) ? $value['payment_name'] : '银行转账提现';
+                    $arr[$key]['add_date']         = $value['add_date'];
+                    $arr[$key]['status']           = $value['is_paid'] == 1 ? '已完成' : ($value['is_paid'] == 0 ? '待审核' : '已取消');
+                }
+            }
+            return $arr;
         } else {
             $type_count = $db_user_account->select(RC_DB::raw('SUM(IF(ua.is_paid = 0, 1, 0)) as wait'),
                 RC_DB::raw('SUM(IF(ua.is_paid = 1, 1, 0)) as finished'),
@@ -737,9 +759,8 @@ class admin extends ecjia_admin
                 ->get();
         }
 
-        $arr = [];
-        if (!empty($list)) {
 
+        if (!empty($list)) {
             foreach ($list as $key => $value) {
                 $apply_amount                   = abs($value['amount']);
                 $list[$key]['apply_amount']     = ecjia_price_format($apply_amount);
@@ -750,22 +771,8 @@ class admin extends ecjia_admin
 
                 $real_amount                   = abs($value['amount']) - $value['pay_fee'];
                 $list[$key]['formated_amount'] = ecjia_price_format($real_amount);
-
-                $arr[$key]['order_sn']         = $value['order_sn'];
-                $arr[$key]['user_name']        = $value['user_name'];
-                $arr[$key]['apply_amount']     = $list[$key]['apply_amount'];
-                $arr[$key]['formated_pay_fee'] = $list[$key]['formated_pay_fee'];
-                $arr[$key]['formated_amount']  = $list[$key]['formated_amount'];
-                $arr[$key]['payment_name']     = !empty($value['payment_name']) ? $value['payment_name'] : '银行转账提现';
-                $arr[$key]['add_date']         = $list[$key]['add_date'];
-                $arr[$key]['status']           = $value['is_paid'] == 1 ? '已完成' : ($value['is_paid'] == 0 ? '待审核' : '已取消');
             }
         }
-
-        if ($return_all) {
-            return $arr;
-        }
-
         return array('list' => $list, 'filter' => $filter, 'page' => $page->show(5), 'desc' => $page->page_desc(), 'type_count' => $type_count);
     }
 
