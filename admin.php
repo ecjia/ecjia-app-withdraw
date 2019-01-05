@@ -621,7 +621,7 @@ class admin extends ecjia_admin
     {
         $data = $this->get_withdraw_list(true);
 
-        RC_Excel::load(RC_APP_PATH . 'withdraw' . DIRECTORY_SEPARATOR . 'statics/files/withdraw.xlsx', function ($excel) use ($data) {
+        RC_Excel::load(RC_APP_PATH . 'withdraw' . DIRECTORY_SEPARATOR . 'statics/files/withdraw.xls', function ($excel) use ($data) {
             $excel->sheet('First sheet', function ($sheet) use ($data) {
                 foreach ($data as $k => $v) {
                     $sheet->appendRow($k + 2, $v);
