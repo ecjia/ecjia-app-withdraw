@@ -82,9 +82,9 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
     	    return new ecjia_error( 'cardholder_can_not_empty', '请填写真实姓名！');
     	}
     	
-    	//判断用户有没绑定微信
-    	$connect_user = RC_DB::table('connect_user')->where('connect_code', 'sns_wechat')->where('user_id', $user_id)->where('user_type', 'user')->first();
-    	if (empty($connect_user)) {
+    	//必须是关注公众号的绑定微信的用户
+    	$wechat_user_info = RC_DB::table('wechat_user')->where('ect_uid', $user_id)->first();
+    	if (empty($wechat_user_info)) {
     		return new ecjia_error('pls_bind_wechat', '请先绑定微信账号！');
     	}
     	
@@ -93,7 +93,7 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
     	$data = [
     	    'bank_name' 		=> '微信钱包',
     	    'bank_en_short' 	=> 'WECHAT',
-    	    'bank_card' 		=> empty($connect_user['open_id']) ? '' : $connect_user['open_id'],
+    	    'bank_card' 		=> empty($wechat_user_info['open_id']) ? '' : $wechat_user_info['open_id'],
     	    'bank_branch_name' 	=> '',
     	    'cardholder' 		=> $real_name,
     	    'bank_type'			=> 'wechat',
