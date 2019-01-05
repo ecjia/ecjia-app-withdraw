@@ -93,7 +93,7 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
     	$data = [
     	    'bank_name' 		=> '微信钱包',
     	    'bank_en_short' 	=> 'WECHAT',
-    	    'bank_card' 		=> empty($wechat_user_info['open_id']) ? '' : $wechat_user_info['open_id'],
+    	    'bank_card' 		=> empty($wechat_user_info['openid']) ? '' : $wechat_user_info['openid'],
     	    'bank_branch_name' 	=> '',
     	    'cardholder' 		=> $real_name,
     	    'bank_type'			=> 'wechat',
