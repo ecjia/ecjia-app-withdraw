@@ -86,7 +86,7 @@ class admin_config extends ecjia_admin
         })->toArray();
 
         //获取支持银行
-        $data =  Ecjia\App\Setting\BankWithdraw::allBanks();
+        $data = Ecjia\App\Setting\BankWithdraw::allBanks();
 
         $data = collect($data)->map(function ($item, $key) use ($bank_en_short) {
             $checked = false;
@@ -100,7 +100,7 @@ class admin_config extends ecjia_admin
                 'checked'       => $checked
             ];
         })->toArray();
-        
+
         $this->assign('data', $data);
 
         $this->assign('current_code', 'withdraw_setting');
@@ -125,31 +125,31 @@ class admin_config extends ecjia_admin
             return $this->showmessage('请至少选择一种提现银行', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
 
-        //获取ecjia_cloud对象
-        $cloud = ecjia_cloud::instance()->api('product/banks')->run();
-        //获取每页可更新数
-        $data = $cloud->getReturnData();
+        try {
+            //获取ecjia_cloud对象
+            $cloud = ecjia_cloud::instance()->api('product/banks')->run();
+            //获取每页可更新数
+            $data = $cloud->getReturnData();
 
-//        $collection = collect($data);
-//        $filtered = $collection->whereIn('bank_en_short', $bank_en_short);
-//        $bank_list = $filtered->all();
-
-        $bank_list = [];
-        if (!empty($data)) {
-            foreach ($data as $k => $v) {
-                if (in_array($v['bank_en_short'], $bank_en_short)) {
-                    $bank_list[] = $v;
+            $bank_list = [];
+            if (!empty($data)) {
+                foreach ($data as $k => $v) {
+                    if (in_array($v['bank_en_short'], $bank_en_short)) {
+                        $bank_list[] = $v;
+                    }
                 }
             }
+
+            $bank_list = serialize($bank_list);
+
+            ecjia_config::instance()->write_config('withdraw_fee', $withdraw_fee);
+            ecjia_config::instance()->write_config('withdraw_min_amount', $withdraw_min_amount);
+            ecjia_config::instance()->write_config('withdraw_support_banks', $bank_list);
+
+            return $this->showmessage('保存成功', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => RC_Uri::url('withdraw/admin_config/init')));
+        } catch (\Royalcms\Component\Database\QueryException $e) {
+            return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
-
-        $bank_list = serialize($bank_list);
-
-        ecjia_config::instance()->write_config('withdraw_fee', $withdraw_fee);
-        ecjia_config::instance()->write_config('withdraw_min_amount', $withdraw_min_amount);
-        ecjia_config::instance()->write_config('withdraw_support_banks', $bank_list);
-
-        return $this->showmessage('保存成功', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => RC_Uri::url('withdraw/admin_config/init')));
     }
 
 }

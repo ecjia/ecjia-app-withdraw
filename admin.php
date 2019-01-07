@@ -415,21 +415,26 @@ class admin extends ecjia_admin
         /* 初始化 */
         $id = $this->request->input('id');
 
-        /* 查询当前的预付款信息 */
-        $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
+        try {
+            /* 查询当前的预付款信息 */
+            $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
 
-        //到款状态不能再次修改
-        if (empty($account)) {
-            return $this->showmessage('该订单不存在', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            //到款状态不能再次修改
+            if (empty($account)) {
+                return $this->showmessage('该订单不存在', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            }
+
+            $result = (new \Ecjia\App\Withdraw\Transfers\TransferQueryManager($account['order_sn']))->transfer();
+
+            if (is_ecjia_error($result)) {
+                return $this->showmessage($result->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            }
+
+            return $this->showmessage('与支付机构对账成功，状态正常', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
+
+        } catch (\Royalcms\Component\Database\QueryException $e) {
+            return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
-
-        $result = (new \Ecjia\App\Withdraw\Transfers\TransferQueryManager($account['order_sn']))->transfer();
-
-        if (is_ecjia_error($result)) {
-            return $this->showmessage($result->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-        }
-
-        return $this->showmessage('与支付机构对账成功，状态正常', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
     }
 
     /**
@@ -442,30 +447,35 @@ class admin extends ecjia_admin
 
         $id = intval($_GET['id']);
 
-        $user_account_info = RC_DB::table('user_account')->where('id', $id)->first();
-        if (empty($user_account_info)) {
-            return $this->showmessage('该记录不存在', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-        }
-
-        $userinfo = RC_DB::table('users')->where('user_id', $user_account_info['user_id'])->first();
-        $name     = $userinfo['user_name'];
-
-        //提现申请记录删除；且到款状态是未确认时；解冻提现申请时冻结的资金
-        if ($user_account_info['process_type'] == 1) {
-            if (empty($user_account_info['is_paid'])) {
-                $frozen_money = $user_account_info['amount'];
-                $user_money   = abs($user_account_info['amount']);
-
-                user_account::change_user_money($user_account_info['user_id'], $user_money); //返还余额
-                user_account::change_frozen_money($user_account_info['user_id'], $frozen_money); //减掉冻结金额
+        try {
+            $user_account_info = RC_DB::table('user_account')->where('id', $id)->first();
+            if (empty($user_account_info)) {
+                return $this->showmessage('该记录不存在', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
             }
+
+            $userinfo = RC_DB::table('users')->where('user_id', $user_account_info['user_id'])->first();
+            $name     = $userinfo['user_name'];
+
+            //提现申请记录删除；且到款状态是未确认时；解冻提现申请时冻结的资金
+            if ($user_account_info['process_type'] == 1) {
+                if (empty($user_account_info['is_paid'])) {
+                    $frozen_money = $user_account_info['amount'];
+                    $user_money   = abs($user_account_info['amount']);
+
+                    user_account::change_user_money($user_account_info['user_id'], $user_money); //返还余额
+                    user_account::change_frozen_money($user_account_info['user_id'], $frozen_money); //减掉冻结金额
+                }
+            }
+            $user_name = empty($name) ? RC_Lang::get('user::users.no_name') : $name;
+
+            RC_DB::table('user_account')->where('id', $id)->delete();
+            ecjia_admin::admin_log(addslashes($user_name), 'remove', 'withdraw_apply');
+
+            return $this->showmessage(RC_Lang::get('user::user_account.drop_success'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
+
+        } catch (\Royalcms\Component\Database\QueryException $e) {
+            return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
-        $user_name = empty($name) ? RC_Lang::get('user::users.no_name') : $name;
-
-        RC_DB::table('user_account')->where('id', $id)->delete();
-        ecjia_admin::admin_log(addslashes($user_name), 'remove', 'withdraw_apply');
-
-        return $this->showmessage(RC_Lang::get('user::user_account.drop_success'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS);
     }
 
     /**
@@ -476,33 +486,38 @@ class admin extends ecjia_admin
         /* 检查权限 */
         $this->admin_priv('withdraw_delete', ecjia::MSGTYPE_JSON);
 
-        if (isset($_POST['checkboxes'])) {
-            $idArr = explode(',', $_POST['checkboxes']);
-            $count = count($idArr);
-            $data  = RC_DB::table('user_account')->whereIn('id', $idArr)->get();
-            RC_DB::table('user_account')->whereIn('id', $idArr)->delete();
+        try {
+            if (isset($_POST['checkboxes'])) {
+                $idArr = explode(',', $_POST['checkboxes']);
+                $count = count($idArr);
+                $data  = RC_DB::table('user_account')->whereIn('id', $idArr)->get();
+                RC_DB::table('user_account')->whereIn('id', $idArr)->delete();
 
-            if (!empty($data)) {
-                foreach ($data as $v) {
-                    if ($v['process_type'] == 1) {
-                        $amount = (-1) * $v['amount'];
+                if (!empty($data)) {
+                    foreach ($data as $v) {
+                        if ($v['process_type'] == 1) {
+                            $amount = (-1) * $v['amount'];
 
-                        //提现且状态为未确认的；返还余额；解冻冻结金额
-                        if (empty($v['is_paid'])) {
-                            $frozen_money = $v['amount'];
-                            $user_money   = abs($v['amount']);
-                            user_account::change_user_money($v['user_id'], $user_money); //返还余额
-                            user_account::change_frozen_money($v['user_id'], $frozen_money); //减掉冻结金额
+                            //提现且状态为未确认的；返还余额；解冻冻结金额
+                            if (empty($v['is_paid'])) {
+                                $frozen_money = $v['amount'];
+                                $user_money   = abs($v['amount']);
+                                user_account::change_user_money($v['user_id'], $user_money); //返还余额
+                                user_account::change_frozen_money($v['user_id'], $frozen_money); //减掉冻结金额
+                            }
+                            ecjia_admin::admin_log(sprintf(RC_Lang::get('user::user_account.user_name_is'), $v['user_name']) . sprintf(RC_Lang::get('user::user_account.money_is'), price_format($amount)), 'batch_remove', 'withdraw_apply');
+                        } else {
+                            ecjia_admin::admin_log(sprintf(RC_Lang::get('user::user_account.user_name_is'), $v['user_name']) . sprintf(RC_Lang::get('user::user_account.money_is'), price_format($v['amount'])), 'batch_remove', 'recharge_apply');
                         }
-                        ecjia_admin::admin_log(sprintf(RC_Lang::get('user::user_account.user_name_is'), $v['user_name']) . sprintf(RC_Lang::get('user::user_account.money_is'), price_format($amount)), 'batch_remove', 'withdraw_apply');
-                    } else {
-                        ecjia_admin::admin_log(sprintf(RC_Lang::get('user::user_account.user_name_is'), $v['user_name']) . sprintf(RC_Lang::get('user::user_account.money_is'), price_format($v['amount'])), 'batch_remove', 'recharge_apply');
                     }
+                    return $this->showmessage(sprintf(RC_Lang::get('user::user_account.delete_record_count'), $count), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => RC_Uri::url('withdraw/admin/init')));
                 }
-                return $this->showmessage(sprintf(RC_Lang::get('user::user_account.delete_record_count'), $count), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => RC_Uri::url('withdraw/admin/init')));
+            } else {
+                return $this->showmessage(RC_Lang::get('user::user_account.select_operate_item'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
             }
-        } else {
-            return $this->showmessage(RC_Lang::get('user::user_account.select_operate_item'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+
+        } catch (\Royalcms\Component\Database\QueryException $e) {
+            return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
     }
 
@@ -515,89 +530,93 @@ class admin extends ecjia_admin
         $user_info       = RC_DB::table('users')->where('mobile_phone', $user_mobile)->first();
         $wechat_nickname = '未绑定';
 
-        if (empty($user_mobile)) {
-            return $this->showmessage('会员手机号码不能为空！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-        } elseif (empty($user_info)) {
-            return $this->showmessage('该手机号对应的会员信息不存在！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
-        } else {
-            $user_info['formated_user_money'] = ecjia_price_format($user_info['user_money'], false);
-
-            $connect_info = RC_DB::table('connect_user')->where('connect_code', 'sns_wechat')->where('user_id', $user_info['user_id'])->first();
-            if (!empty($connect_info)) {
-                $ect_uid = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->pluck('ect_uid');
-                //修正绑定信息
-                if (empty($ect_uid)) {
-                    RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->update(array('ect_uid' => $connect_info['user_id']));
-                }
-                $wechat_info = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->where('ect_uid', $connect_info['user_id'])->first();
-                if (!empty($wechat_info)) {
-                    $wechat_nickname = $wechat_info['nickname'];
-                }
-            }
-
-            $result = array(
-                'status'          => 1,
-                'username'        => $user_info['user_name'],
-                'user_money'      => $user_info['formated_user_money'],
-                'wechat_nickname' => $wechat_nickname,
-                'user_id'         => $user_info['user_id']
-            );
-
-            $user_info['avatar_img'] = !empty($user_info['avatar_img']) ? RC_Upload::upload_url($user_info['avatar_img']) : RC_App::apps_url('statics/images/default-avatar-60.png', __FILE__);
-
-            if ($user_info['user_rank'] == 0) {
-                //重新计算会员等级
-                $row_rank = RC_Api::api('user', 'update_user_rank', array('user_id' => $user_info['user_id']));
+        try {
+            if (empty($user_mobile)) {
+                return $this->showmessage('会员手机号码不能为空！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+            } elseif (empty($user_info)) {
+                return $this->showmessage('该手机号对应的会员信息不存在！', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
             } else {
-                $row_rank = RC_DB::table('user_rank')->where('rank_id', $user_info['user_rank'])->first();
-            }
+                $user_info['formated_user_money'] = ecjia_price_format($user_info['user_money'], false);
 
-            $user_binded_list = [];
-            $bank_list        = RC_DB::table('withdraw_user_bank')->where('user_id', $user_info['user_id'])->where('user_type', 'user')->get();
-            if ($bank_list) {
-                foreach ($bank_list as $val) {
-                    $formated_pay_name = $val['bank_name'];
-
-                    if ($val['bank_type'] == 'bank') {
-                        $bank      = Ecjia\App\Setting\BankWithdraw::getBankInfoByEnShort($val['bank_en_short']);
-                        $bank_icon = $bank['bank_icon'];
-
-                        if (!empty($val['bank_name']) && !empty($val['bank_card'])) {
-                            $bank_card_str = substr($val['bank_card'], -4);
-
-                            $formated_pay_name = $val['bank_name'] . ' (' . $bank_card_str . ')';
-                        }
-
-                    } elseif ($val['bank_type'] == 'wechat') {
-                        $bank_icon = RC_App::apps_url('statics/images/wechat.png', __FILE__);
-
-                        if (!empty($val['bank_name']) && !empty($val['cardholder'])) {
-                            $formated_pay_name = $val['bank_name'] . ' (' . $val['cardholder'] . ')';
-                        }
-
+                $connect_info = RC_DB::table('connect_user')->where('connect_code', 'sns_wechat')->where('user_id', $user_info['user_id'])->first();
+                if (!empty($connect_info)) {
+                    $ect_uid = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->pluck('ect_uid');
+                    //修正绑定信息
+                    if (empty($ect_uid)) {
+                        RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->update(array('ect_uid' => $connect_info['user_id']));
                     }
-
-                    $user_binded_list[] = [
-                        'id'                => intval($val['id']),
-                        'bank_icon'         => $bank_icon,
-                        'formated_pay_name' => $formated_pay_name,
-                    ];
+                    $wechat_info = RC_DB::table('wechat_user')->where('unionid', $connect_info['open_id'])->where('ect_uid', $connect_info['user_id'])->first();
+                    if (!empty($wechat_info)) {
+                        $wechat_nickname = $wechat_info['nickname'];
+                    }
                 }
+
+                $result = array(
+                    'status'          => 1,
+                    'username'        => $user_info['user_name'],
+                    'user_money'      => $user_info['formated_user_money'],
+                    'wechat_nickname' => $wechat_nickname,
+                    'user_id'         => $user_info['user_id']
+                );
+
+                $user_info['avatar_img'] = !empty($user_info['avatar_img']) ? RC_Upload::upload_url($user_info['avatar_img']) : RC_App::apps_url('statics/images/default-avatar-60.png', __FILE__);
+
+                if ($user_info['user_rank'] == 0) {
+                    //重新计算会员等级
+                    $row_rank = RC_Api::api('user', 'update_user_rank', array('user_id' => $user_info['user_id']));
+                } else {
+                    $row_rank = RC_DB::table('user_rank')->where('rank_id', $user_info['user_rank'])->first();
+                }
+
+                $user_binded_list = [];
+                $bank_list        = RC_DB::table('withdraw_user_bank')->where('user_id', $user_info['user_id'])->where('user_type', 'user')->get();
+                if ($bank_list) {
+                    foreach ($bank_list as $val) {
+                        $formated_pay_name = $val['bank_name'];
+
+                        if ($val['bank_type'] == 'bank') {
+                            $bank      = Ecjia\App\Setting\BankWithdraw::getBankInfoByEnShort($val['bank_en_short']);
+                            $bank_icon = $bank['bank_icon'];
+
+                            if (!empty($val['bank_name']) && !empty($val['bank_card'])) {
+                                $bank_card_str = substr($val['bank_card'], -4);
+
+                                $formated_pay_name = $val['bank_name'] . ' (' . $bank_card_str . ')';
+                            }
+
+                        } elseif ($val['bank_type'] == 'wechat') {
+                            $bank_icon = RC_App::apps_url('statics/images/wechat.png', __FILE__);
+
+                            if (!empty($val['bank_name']) && !empty($val['cardholder'])) {
+                                $formated_pay_name = $val['bank_name'] . ' (' . $val['cardholder'] . ')';
+                            }
+
+                        }
+
+                        $user_binded_list[] = [
+                            'id'                => intval($val['id']),
+                            'bank_icon'         => $bank_icon,
+                            'formated_pay_name' => $formated_pay_name,
+                        ];
+                    }
+                }
+
+                $data = array(
+                    'user_id'             => $user_info['user_id'],
+                    'avatar_img'          => $user_info['avatar_img'],
+                    'user_name'           => $user_info['user_name'],
+                    'formated_user_money' => $user_info['formated_user_money'],
+                    'rank_name'           => $row_rank['rank_name'],
+                    'user_binded_list'    => $user_binded_list,
+                    'unbind_icon'         => RC_App::apps_url('statics/images/unbind.png', __FILE__)
+                );
+                $this->assign('data', $data);
+                $content = $this->fetch('library/user_card.lbi');
+
+                return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('result' => $result, 'content' => $content));
             }
-
-            $data = array(
-                'user_id'             => $user_info['user_id'],
-                'avatar_img'          => $user_info['avatar_img'],
-                'user_name'           => $user_info['user_name'],
-                'formated_user_money' => $user_info['formated_user_money'],
-                'rank_name'           => $row_rank['rank_name'],
-                'user_binded_list'    => $user_binded_list,
-                'unbind_icon'         => RC_App::apps_url('statics/images/unbind.png', __FILE__)
-            );
-            $this->assign('data', $data);
-            $content = $this->fetch('library/user_card.lbi');
-
-            return $this->showmessage('', ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('result' => $result, 'content' => $content));
+        } catch (\Royalcms\Component\Database\QueryException $e) {
+            return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
         }
     }
 
