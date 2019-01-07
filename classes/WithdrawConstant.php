@@ -60,7 +60,7 @@ class WithdrawConstant
     const WITHDRAW_RECORD_STATUS_FAILED     = 11; //支付失败
     const WITHDRAW_RECORD_STATUS_REFUND     = 21; //银行退票
 
-    protected $record_status = [
+    protected static $record_status = [
         self::WITHDRAW_RECORD_STATUS_WAIT     => '等待支付',
         self::WITHDRAW_RECORD_STATUS_PAYED    => '支付完成',
         self::WITHDRAW_RECORD_STATUS_PROGRESS => '支付进行中',
@@ -77,7 +77,7 @@ class WithdrawConstant
     const ORDER_PAY_STATUS_CANCEL           = 2; //已取消
     const ORDER_PAY_STATUS_FAILED           = 11; //已确认，支付失败
 
-    protected $pay_status = [
+    protected static $pay_status = [
         self::ORDER_PAY_STATUS_UNPAY  => '未确认，未支付',
         self::ORDER_PAY_STATUS_PAYED  => '已确认，已支付',
         self::ORDER_PAY_STATUS_CANCEL => '已取消',
@@ -89,9 +89,9 @@ class WithdrawConstant
      * @param $status
      * @return mixed
      */
-    public function getWithdrawRecordStatus($status)
+    public static function getWithdrawRecordStatus($status)
     {
-        return array_get($this->record_status, $status, '未知');
+        return array_get(self::$record_status, $status, '未知');
     }
 
     /**
@@ -99,9 +99,9 @@ class WithdrawConstant
      * @param $status
      * @return mixed
      */
-    public function getOrderPayStatus($status)
+    public static function getOrderPayStatus($status)
     {
-        return array_get($this->pay_status, $status, '未知');
+        return array_get(self::$pay_status, $status, '未知');
     }
 
 
