@@ -627,7 +627,7 @@ class admin extends ecjia_admin
                     $sheet->appendRow($k + 2, $v);
                 }
             });
-        })->download('xls');
+        })->download('xlsx');
     }
 
     public function get_user_bank()
