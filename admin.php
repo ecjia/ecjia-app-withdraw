@@ -323,7 +323,7 @@ class admin extends ecjia_admin
             $record_info['payment_time']  = !empty($record_info['payment_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['payment_time']) : '';
             $record_info['transfer_time'] = !empty($record_info['create_time']) ? RC_Time::local_date(ecjia::config('time_format'), $record_info['transfer_time']) : '';
 
-            $record_info['label_withdraw_status'] = (new \Ecjia\App\Withdraw\WithdrawConstant())->getWithdrawRecordStatus($record_info['withdraw_status']);
+            $record_info['label_withdraw_status'] = \Ecjia\App\Withdraw\WithdrawConstant::getWithdrawRecordStatus($record_info['withdraw_status']);
         }
         $this->assign('record_info', $record_info);
 
