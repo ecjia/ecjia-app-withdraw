@@ -83,7 +83,7 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
     	}
     	
     	//必须是关注公众号的绑定微信的用户
-    	$wechat_user_info = RC_DB::table('wechat_user')->where('ect_uid', $user_id)->first();
+    	$wechat_user_info = $this->wechat_user_info($user_id);
     	if (empty($wechat_user_info)) {
     		return new ecjia_error('pls_bind_wechat', '请先绑定微信账号！');
     	}
@@ -110,6 +110,19 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
     	}
     	
     	return [];
+	}
+	
+	/**
+	 * 是否关注公众号，且绑定微信的用户
+	 */
+	private function wechat_user_info($user_id)
+	{
+		$wechat_user_info = RC_DB::table('wechat_user as wu')->leftJoin('platform_account as pa', RC_DB::raw('pa.id'), '=', RC_DB::raw('wu.wechat_id'))
+								->where(RC_DB::raw('wu.ect_uid'), $user_id)
+								->where(RC_DB::raw('pa.shop_id'), 0)
+								->select(RC_DB::raw('wu.*'))
+								->first();
+		return $wechat_user_info;
 	}
 }
 
