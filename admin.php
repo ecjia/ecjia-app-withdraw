@@ -305,8 +305,7 @@ class admin extends ecjia_admin
         $this->assign('form_action', RC_Uri::url('withdraw/admin/action'));
 
         if ($account_info['bank_en_short'] !== 'WECHAT') {
-            $bank_card_str                         = substr($account_info['bank_card'], -4);
-            $account_info['formated_payment_name'] = !empty($account_info['bank_name']) ? $account_info['bank_name'] . ' (' . $bank_card_str . ')' : '';
+            $account_info['formated_payment_name'] = !empty($account_info['bank_name']) ? $account_info['bank_name'] . ' (' . $account_info['bank_card'] . ')' : '';
         } else {
             $account_info['formated_payment_name'] = $account_info['bank_name'] . ' (' . $account_info['cardholder'] . ')';
         }
