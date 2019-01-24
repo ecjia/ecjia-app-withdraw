@@ -66,7 +66,7 @@ class withdraw_plugin_install_api extends Component_Event_Api {
 
                 return true;
             } else {
-                return ecjia_plugin::add_error('plugin_install_error', __('插件参数不全'));
+                return ecjia_plugin::add_error('plugin_install_error', __('插件参数不全', 'withdraw'));
             }
 
         } catch (\Symfony\Component\Debug\Exception\FatalErrorException $e) {

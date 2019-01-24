@@ -54,11 +54,11 @@ class WithdrawConstant
     /**
      * 流水记录的支付状态
      */
-    const WITHDRAW_RECORD_STATUS_WAIT       = 0; //等待支付
-    const WITHDRAW_RECORD_STATUS_PAYED      = 1; //支付完成
-    const WITHDRAW_RECORD_STATUS_PROGRESS   = 2; //支付进行中
-    const WITHDRAW_RECORD_STATUS_FAILED     = 11; //支付失败
-    const WITHDRAW_RECORD_STATUS_REFUND     = 21; //银行退票
+    const WITHDRAW_RECORD_STATUS_WAIT = 0; //等待支付
+    const WITHDRAW_RECORD_STATUS_PAYED = 1; //支付完成
+    const WITHDRAW_RECORD_STATUS_PROGRESS = 2; //支付进行中
+    const WITHDRAW_RECORD_STATUS_FAILED = 11; //支付失败
+    const WITHDRAW_RECORD_STATUS_REFUND = 21; //银行退票
 
     protected static $record_status = [
         self::WITHDRAW_RECORD_STATUS_WAIT     => '等待支付',
@@ -72,10 +72,10 @@ class WithdrawConstant
     /**
      * user_account表中is_paid字段的提现支付状态
      */
-    const ORDER_PAY_STATUS_UNPAY            = 0; //未确认，未支付
-    const ORDER_PAY_STATUS_PAYED            = 1; //已确认，已支付
-    const ORDER_PAY_STATUS_CANCEL           = 2; //已取消
-    const ORDER_PAY_STATUS_FAILED           = 11; //已确认，支付失败
+    const ORDER_PAY_STATUS_UNPAY = 0; //未确认，未支付
+    const ORDER_PAY_STATUS_PAYED = 1; //已确认，已支付
+    const ORDER_PAY_STATUS_CANCEL = 2; //已取消
+    const ORDER_PAY_STATUS_FAILED = 11; //已确认，支付失败
 
     protected static $pay_status = [
         self::ORDER_PAY_STATUS_UNPAY  => '未确认，未支付',
@@ -91,7 +91,7 @@ class WithdrawConstant
      */
     public static function getWithdrawRecordStatus($status)
     {
-        return array_get(self::$record_status, $status, '未知');
+        return array_get(self::$record_status, $status, __('未知', 'withdraw'));
     }
 
     /**
@@ -101,7 +101,7 @@ class WithdrawConstant
      */
     public static function getOrderPayStatus($status)
     {
-        return array_get(self::$pay_status, $status, '未知');
+        return array_get(self::$pay_status, $status, __('未知', 'withdraw'));
     }
 
 
