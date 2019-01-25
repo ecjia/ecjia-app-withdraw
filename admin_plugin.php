@@ -70,7 +70,7 @@ class admin_plugin extends ecjia_admin
         RC_Script::enqueue_script('jquery-uniform');
         RC_Style::enqueue_style('chosen');
         RC_Script::enqueue_script('jquery-chosen');
-        RC_Script::localize_script('admin_plugin', 'js_lang', RC_Lang::get('withdraw::withdraw.js_lang'));
+        RC_Script::localize_script('admin_plugin', 'js_lang', config('app-withdraw::jslang.admin_plugin'));
 
         ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(__('提现方式', 'withdraw')), RC_Uri::url('withdraw/admin_plugin/init'));
         ecjia_screen::get_current_screen()->set_parentage('withdraw', 'withdraw/admin_plugin.php');

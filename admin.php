@@ -82,13 +82,7 @@ class admin extends ecjia_admin
 
         RC_Script::enqueue_script('koala', RC_App::apps_url('statics/js/koala.js', __FILE__));
 
-        $account_jslang = array(
-            'keywords_required' => RC_Lang::get('user::user_account.keywords_required'),
-            'username_required' => RC_Lang::get('user::user_account.username_required'),
-            'amount_required'   => RC_Lang::get('user::user_account.amount_required'),
-            'check_time'        => RC_Lang::get('user::user_account.check_time'),
-        );
-        RC_Script::localize_script('admin', 'account_jslang', $account_jslang);
+        RC_Script::localize_script('admin', 'js_lang', config('app-withdraw::jslang.admin'));
 
         ecjia_screen::get_current_screen()->add_nav_here(new admin_nav_here(__('提现申请', 'withdraw'), RC_Uri::url('withdraw/admin/init')));
     }
