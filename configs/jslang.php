@@ -47,12 +47,12 @@
 defined('IN_ECJIA') or exit('No permission resources.');
 
 return array(
-    'admin'        => array(
+    'admin_page'        => array(
         'time_error'        => __('开始时间不能大于或等于结束时间', 'withdraw'),
         'username_required' => __('请输入会员名称', 'withdraw'),
         'amount_required'   => __('请输入金额', 'withdraw'),
     ),
-    'admin_plugin' => array(
+    'admin_plugin_page' => array(
         'withdraw_name_required'  => __('请输入提现名称', 'withdraw'),
         'withdraw_name_minlength' => __('提现名称长度不能小于3', 'withdraw'),
         'withdraw_desc_required'  => __('请输入提现描述', 'withdraw'),
