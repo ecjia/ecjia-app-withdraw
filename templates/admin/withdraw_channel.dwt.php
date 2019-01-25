@@ -34,11 +34,11 @@
 				<!-- {if $module.enabled == 1} -->
 				{$module.desc|nl2br}
 				<div class="edit-list">
-					<a class="data-pjax" href='{RC_Uri::url("withdraw/admin_plugin/edit", "code={$module.code}")}' title='{t domain="withdraw"}编辑{/t}'>{t domain="withdraw" }编辑{/t} </a>&nbsp;|&nbsp; <a class="switch ecjiafc-red" href="javascript:;" data-url='{RC_Uri::url("withdraw/admin_plugin/disable", "code={$module.code}")}' title='{t domain="withdraw"}禁用{/t}'>{t domain="withdraw"}禁用{/t} </a> </div> 
+					<a class="data-pjax" href='{RC_Uri::url("withdraw/admin_plugin/edit", "code={$module.code}")}' title='{t domain="withdraw"}编辑{/t}'>{t domain="withdraw"}编辑{/t} </a>&nbsp;|&nbsp; <a class="switch ecjiafc-red" href="javascript:;" data-url='{RC_Uri::url("withdraw/admin_plugin/disable", "code={$module.code}")}' title='{t domain="withdraw"}禁用{/t}'>{t domain="withdraw"}禁用{/t} </a> </div> 
 					<!-- {else} -->
 				{$module.desc|nl2br}
 				<div class="edit-list">
-					<a class="switch" href="javascript:;" data-url='{RC_Uri::url("withdraw/admin_plugin/enable", "code={$module.code}")}' title='{t domain="withdraw"}启用{/t}'>{t domain="withdraw" }启用{/t} </a> </div> <!-- {/if} -->
+					<a class="switch" href="javascript:;" data-url='{RC_Uri::url("withdraw/admin_plugin/enable", "code={$module.code}")}' title='{t domain="withdraw"}启用{/t}'>{t domain="withdraw"}启用{/t} </a> </div> <!-- {/if} -->
 			</td>
 			<td>
 				<!-- {if $module.enabled == 1} -->
