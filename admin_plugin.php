@@ -120,6 +120,7 @@ class admin_plugin extends ecjia_admin
         $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
 
         $code = trim($_GET['code']);
+        $from = trim($_GET['from']);
         $data = array(
             'enabled' => 0
         );
@@ -132,7 +133,10 @@ class admin_plugin extends ecjia_admin
             ecjia_admin::admin_log($withdraw_name, 'stop', 'withdraw');
 
             $refresh_url = RC_Uri::url('withdraw/admin_plugin/init');
-            return $this->showmessage(__('插件', 'withdraw') . "<strong> " . __('已停用', 'withdraw') . " </strong>", ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => $refresh_url));
+            if ($from == 'edit') {
+                $refresh_url = RC_Uri::url('withdraw/admin_plugin/edit', array('code' => $code));
+            }
+            return $this->showmessage(__('插件<strong>已禁用</strong>', 'withdraw'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => $refresh_url));
 
         } catch (\Royalcms\Component\Database\QueryException $e) {
             return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
@@ -147,6 +151,7 @@ class admin_plugin extends ecjia_admin
         $this->admin_priv('withdraw_update', ecjia::MSGTYPE_JSON);
 
         $code = trim($_GET['code']);
+        $from = trim($_GET['from']);
         $data = array(
             'enabled' => 1
         );
@@ -159,7 +164,10 @@ class admin_plugin extends ecjia_admin
             ecjia_admin::admin_log($withdraw_name, 'use', 'withdraw');
 
             $refresh_url = RC_Uri::url('withdraw/admin_plugin/init');
-            return $this->showmessage(__('插件', 'withdraw') . "<strong> " . __('已启用', 'withdraw') . " </strong>", ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => $refresh_url));
+            if ($from == 'edit') {
+                $refresh_url = RC_Uri::url('withdraw/admin_plugin/edit', array('code' => $code));
+            }
+            return $this->showmessage(__('插件<strong>已启用</strong>', 'withdraw'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_SUCCESS, array('pjaxurl' => $refresh_url));
 
         } catch (\Royalcms\Component\Database\QueryException $e) {
             return $this->showmessage($e->getMessage(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);

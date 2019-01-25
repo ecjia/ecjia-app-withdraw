@@ -10,7 +10,13 @@
 <!-- {block name="main_content"} -->
 {if $withdraw.enabled neq 1}
 <div class="alert alert-error">
-	<strong>{t domain="withdraw"}温馨提示：{/t}</strong>{t domain="withdraw"}该提现方式已经禁用，如果您需要使用，请点击{/t}<a class="switch" href="javascript:;" data-url='{RC_Uri::url("withdraw/admin_plugin/enable", "code={$withdraw.withdraw_code}&from=edit")}' title='{t domain="withdraw"}启用{/t}'>{t domain="withdraw"}禁用{/t} </a>。 </div> {/if} <div>
+    {t domain="withdraw" escape=no url="{RC_Uri::url('withdraw/admin_plugin/enable')}&code={$withdraw.withdraw_code}&from=edit"}
+    <strong>温馨提示：</strong>该提现方式已经禁用，如果您需要使用，请点击<a class="switch" href="javascript:;" data-url="%1" title="启用">启用</a>。
+    {/t}
+</div>
+{/if}
+
+<div>
 	<h3 class="heading">
 		<!-- {if $ur_here}{$ur_here}{/if} -->
 		{if $action_link}
