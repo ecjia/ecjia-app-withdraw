@@ -69,9 +69,19 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
         $real_name = $this->requestData('real_name', ''); //真实姓名既持卡人
         $connect_code   = $this->requestData('connect_code', ''); //第三方平台code
 
-        if (empty($smscode) || empty($real_name) || empty($connect_code)) {
-            return new ecjia_error('invalid_parameter', __('调用接口withdraw_wechat_wallet_bind_module参数无效！', 'withdraw'));
+        $api_version = $this->request->header('api-version');
+        
+        if (empty($smscode) || empty($real_name)) {
+        	return new ecjia_error('invalid_parameter', __('调用接口withdraw_wechat_wallet_bind_module参数无效！', 'withdraw'));
         }
+        
+        //兼容1.30开始参数判断
+        if (version_compare($api_version, '1.30', '>=')) {
+        	if (empty($connect_code)) {
+        		return new ecjia_error('invalid_parameter', __('调用接口withdraw_wechat_wallet_bind_module参数无效！', 'withdraw'));
+        	}
+        }
+       
         //判断校验码是否过期
         if ($_SESSION['captcha']['sms']['user_bind_wewallet']['lifetime'] < RC_Time::gmtime()) {
             return new ecjia_error('code_timeout', __('验证码已过期，请重新获取！', 'withdraw'));
@@ -97,7 +107,7 @@ class withdraw_wechat_wallet_bind_module extends api_front implements api_interf
             'bank_name'        => __('微信钱包', 'withdraw'),
             'bank_en_short'    => 'WECHAT',
             'bank_card'        => empty($connect_user_info['open_id']) ? '' : $connect_user_info['open_id'],
-            'bank_branch_name' => $connect_code,
+            'bank_branch_name' => empty($connect_code) ? '' : $connect_code,
             'cardholder'       => $real_name,
             'bank_type'        => 'wechat',
         ];
