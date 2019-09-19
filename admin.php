@@ -337,6 +337,11 @@ class admin extends ecjia_admin
         }
         $this->assign('record_info', $record_info);
 
+        //用户已绑定的提现方式
+        $user_binded_list = [];
+        $user_binded_list = $this->get_user_binded_withdraw($account_info);
+        $this->assign('plugins', $user_binded_list);
+
         return $this->display('admin_account_info.dwt');
     }
 
@@ -792,6 +797,46 @@ class admin extends ecjia_admin
         $content = $this->fetch('library/user_card.lbi');
 
         return $content;
+    }
+
+
+    /**
+     *获取用户绑定的提现方式
+     */
+    private function get_user_binded_withdraw($account_info)
+    {
+        $user_binded_list = [];
+        //支付方式
+        $payment = [
+            'bank'   => [
+                'pay_code' => 'withdraw_bank',
+                'pay_name' => __('银行转账提现', 'withdraw')
+            ],
+            'wechat' => [
+                'pay_code' => 'withdraw_wxpay',
+                'pay_name' => __('微信钱包提现', 'withdraw')
+            ],
+        ];
+
+
+
+        $bank_list        = RC_DB::table('withdraw_user_bank')->where('user_id', $account_info['user_id'])->where('user_type', 'user')->get();
+        if ($bank_list) {
+            foreach ($bank_list as $val) {
+                $is_checked = 0;
+                if ($account_info['payment'] == $payment[$val['bank_type']]['pay_code']) {
+                    $is_checked = 1;
+                }
+                $user_binded_list[] = [
+                    'id'                => intval($val['id']),
+                    'withdraw_code'     => isset($payment[$val['bank_type']]['pay_code']) ? $payment[$val['bank_type']]['pay_code'] : '',
+                    'withdraw_name' 	=> isset($payment[$val['bank_type']]['pay_name']) ? $payment[$val['bank_type']]['pay_name'] : '',
+                    'is_checked' 		=> $is_checked,
+                ];
+            }
+        }
+
+        return $user_binded_list;
     }
 }
 
