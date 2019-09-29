@@ -357,6 +357,8 @@ class admin extends ecjia_admin
         $id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $is_paid    = isset($_POST['confirm']) ? 1 : 2;
         $admin_note = isset($_POST['admin_note']) ? trim($_POST['admin_note']) : '';
+        $payment	= isset($_POST['payment']) ? trim($_POST['payment']) : ''; //当前新选择的提现方式
+        $old_withdraw_way = !empty($_POST['old_withdraw_way']) ? trim($_POST['old_withdraw_way']) : ''; //提现申请时选择的提现方式
 
         try {
 
@@ -369,6 +371,34 @@ class admin extends ecjia_admin
 
             /* 同意,更新此条记录,扣除相应的余额 */
             if ($is_paid == 1) {
+                //后台更换提现方式
+                if (!empty($payment)) {
+                    if ($payment != $old_withdraw_way) {
+                        $withdraw_plugin = new \Ecjia\App\Withdraw\WithdrawPlugin();
+                        $plugin          = $withdraw_plugin->channel($payment);
+                        if (is_ecjia_error($plugin)) {
+                            return $this->showmessage($plugin->get_error_message(), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+                        }
+                        $user_bank_card = $plugin->getUserBankcard($account['user_id'])->first();
+                        if (empty($user_bank_card)) {
+                            return $this->showmessage(__('没有绑定提现账户信息', 'withdraw'), ecjia::MSGTYPE_JSON | ecjia::MSGSTAT_ERROR);
+                        }
+                        //用户提现方式绑定的银行卡
+                        $user_bank_card = $user_bank_card->toArray();
+                        $update_data = array(
+                            'payment'          => $payment,
+                            'payment_name'     => $plugin->getName(),
+                            'bank_name'        => $user_bank_card['bank_name'],
+                            'bank_branch_name' => $user_bank_card['bank_branch_name'],
+                            'bank_card'        => $user_bank_card['bank_card'],
+                            'cardholder'       => $user_bank_card['cardholder'],
+                            'bank_en_short'    => $user_bank_card['bank_en_short'],
+                        );
+                        RC_DB::table('user_account')->where('id', $id)->update($update_data);
+                        $account = (new Ecjia\App\Withdraw\Repositories\UserAccountRepository)->findWithdraw($id);
+                    }
+                }
+
                 $amount            = $account['amount'];
                 $user_frozen_money = user_account::get_frozen_money($account['user_id']);
                 $fmt_amount        = abs($amount);
@@ -385,7 +415,7 @@ class admin extends ecjia_admin
                     'withdraw_amount'    => $account['real_amount'],
                     'transfer_bank_no'   => $account['bank_card'],
                     'transfer_true_name' => $account['cardholder'],
-                	'transfer_bank_code' => $account['bank_branch_name'],
+                    'transfer_bank_code' => $account['bank_branch_name'],
                 ]);
 
                 $result = (new \Ecjia\App\Withdraw\Transfers\TransferManager($account['order_sn']))->transfer();
